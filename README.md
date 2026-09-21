@@ -40,7 +40,7 @@ The site runs on Cloudflare Workers through OpenNext. The settings are in `wrang
 1. Put this folder on GitHub.
 2. In the Cloudflare dashboard open **Workers & Pages**, press **Create application**, choose **Import a repository** and pick your repository.
 3. Set the project name to `aarifaflowers`. It must match `name` in `wrangler.jsonc`. Use these commands if Cloudflare asks:
-   - Build command: `npx opennextjs-cloudflare build`
+   - Build command: `npm run build` (this runs the full Cloudflare build)
    - Deploy command: `npx wrangler deploy`
 4. Add the variables below in two places, then deploy:
    - **Settings > Build > Variables and secrets** for `NEXT_PUBLIC_WHATSAPP_NUMBER` and `NEXT_PUBLIC_SITE_URL`. These are read while the site is built.

@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "opennextjs-cloudflare build",
+    "build": "npm run clean && opennextjs-cloudflare build",
     "start": "next start",
     "lint": "eslint",
     "preview": "npm run build && opennextjs-cloudflare preview",
     "deploy": "npm run build && opennextjs-cloudflare deploy",
-    "build:next": "next build"
+    "build:next": "next build",
+    "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

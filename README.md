@@ -6,7 +6,7 @@ A catalogue website for fresh handmade garlands. Customers browse photos by occa
 - Orders: a WhatsApp message with the garland name and starting price already filled in
 - Admin: add, edit and delete garlands, upload photos with automatic background removal, set a starting price or a price range, Fresh Today, Featured
 - Admin list: search, filters, bulk actions, and a count of how often customers tap Order on WhatsApp, made for use on a phone
-- WhatsApp number: set in `NEXT_PUBLIC_WHATSAPP_NUMBER` (in `.env.local` and on Vercel). The buttons and the number shown in the footer both follow it.
+- WhatsApp number: set in `NEXT_PUBLIC_WHATSAPP_NUMBER` (in `.env.local` and in your Cloudflare settings). The buttons and the number shown in the footer both follow it.
 
 ## Run it on your computer
 
@@ -25,7 +25,7 @@ On your computer, changes and photos are saved in the `data` folder. That is onl
 
 ## Put it online for free
 
-You need a free GitHub account, a free Vercel account and a free Supabase account.
+You need a free GitHub account, a free Cloudflare account and a free Supabase account.
 
 ### 1. Supabase (saves your garlands and photos)
 
@@ -33,11 +33,18 @@ You need a free GitHub account, a free Vercel account and a free Supabase accoun
 2. Open **SQL Editor**, paste everything from `supabase.sql`, press **Run**.
 3. Open **Project Settings > API**. Copy the **Project URL** and the **service_role** key. Keep the service_role key secret.
 
-### 2. Vercel (runs the website)
+### 2. Cloudflare (runs the website)
 
-1. Put this folder on GitHub (create a new private repository and upload it).
-2. On vercel.com choose **Add New > Project** and pick that repository.
-3. Before deploying, open **Environment Variables** and add these:
+The site runs on Cloudflare Workers through OpenNext. The settings are in `wrangler.jsonc` and `open-next.config.ts`.
+
+1. Put this folder on GitHub.
+2. In the Cloudflare dashboard open **Workers & Pages**, press **Create application**, choose **Import a repository** and pick your repository.
+3. Set the project name to `aarifaflowers`. It must match `name` in `wrangler.jsonc`. Use these commands if Cloudflare asks:
+   - Build command: `npx opennextjs-cloudflare build`
+   - Deploy command: `npx wrangler deploy`
+4. Add the variables below in two places, then deploy:
+   - **Settings > Build > Variables and secrets** for `NEXT_PUBLIC_WHATSAPP_NUMBER` and `NEXT_PUBLIC_SITE_URL`. These are read while the site is built.
+   - **Settings > Variables and secrets** for all of them. Choose **Secret** for passwords and keys.
 
 | Name | Value |
 | --- | --- |
@@ -46,10 +53,16 @@ You need a free GitHub account, a free Vercel account and a free Supabase accoun
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | `917397309203` |
 | `SUPABASE_URL` | Project URL from Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role key from Supabase |
-| `NEXT_PUBLIC_SITE_URL` | Your Vercel address, for example `https://aarifa-flowers.vercel.app` (add after the first deploy, then redeploy) |
+| `ANTHROPIC_API_KEY` | Optional. Turns on the AI suggestions (see below) |
+| `NEXT_PUBLIC_SITE_URL` | Your site address, for example `https://aarifaflowers.your-name.workers.dev` (add after the first deploy, then deploy again) |
 
-4. Press **Deploy**. Your site is at `https://<project-name>.vercel.app`.
-5. Log in at `/admin`, press **Add sample garlands** if you want the samples, or add your own.
+5. Your site is at the `workers.dev` address Cloudflare shows. Log in at `/admin`, press **Add sample garlands** if you want the samples, or add your own.
+
+Without the two Supabase values the site still opens, but nothing can be saved.
+
+Photos are cropped, resized and converted in your browser before they upload, because Cloudflare Workers cannot run the image tools that this needed before.
+
+To try the site the way Cloudflare runs it, copy `.env.local` to `.dev.vars` and run `npm run preview`. To deploy from your computer instead of GitHub, run `npx wrangler login` once, then `npm run deploy`.
 
 `NEXT_PUBLIC_SITE_URL` adds a link to the garland inside every WhatsApp order message, so you can see the exact photo the customer chose.
 
@@ -72,7 +85,7 @@ In the admin page, after you add photos, the **Suggest name and description with
 To turn it on:
 
 1. Create an account and an API key at console.anthropic.com.
-2. Put the key in `.env.local` as `ANTHROPIC_API_KEY=your-key` (on Vercel, add the same name under Environment Variables).
+2. Put the key in `.env.local` as `ANTHROPIC_API_KEY=your-key` (on Cloudflare, add the same name under Variables and Secrets as a Secret).
 3. Restart `npm run dev`.
 
 Good to know:

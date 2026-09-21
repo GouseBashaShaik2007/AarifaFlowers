@@ -11,7 +11,7 @@ import { OCCASIONS, isCutout, isLang, thumbOf, tr } from "@/lib/catalog";
 import { getDict } from "@/lib/i18n";
 import { visibleReels } from "@/lib/instagram";
 import { getFaq, getInstagramSettings, getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
-import { listProducts } from "@/lib/store";
+import { getProducts } from "@/lib/publicData";
 import { customMessage, generalMessage, waLink } from "@/lib/whatsapp";
 
 const OCCASION_BG: Record<string, string> = {
@@ -27,13 +27,18 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   if (!isLang(lang)) notFound();
   const t = getDict(lang);
 
-  const products = await listProducts();
+  // Everything the page needs is asked for at the same moment, not one after another.
+  const [products, allReviews, instagram, faq, settings] = await Promise.all([
+    getProducts(),
+    getPublishedReviews(),
+    getInstagramSettings(),
+    getFaq(),
+    getSiteSettings(),
+  ]);
   const featured = products.filter((p) => p.featured).slice(0, 8);
   const sets = products.filter((p) => p.types.includes("set")).slice(0, 4);
-  const reviews = (await getPublishedReviews()).slice(0, 6);
-  const instagram = await getInstagramSettings();
-  const faq = await getFaq();
-  const leadTime = tr((await getSiteSettings()).leadTime, lang);
+  const reviews = allReviews.slice(0, 6);
+  const leadTime = tr(settings.leadTime, lang);
   const heroPics = (featured.length ? featured : products).filter((p) => p.images[0]).slice(0, 3);
 
   const occasionImage = (id: string) => {
@@ -80,7 +85,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
               ) : (
                 // An ordinary photo is shown as a tall framed picture, not as a rectangle inside the round shape.
                 <div className="absolute inset-y-1 left-1/2 aspect-[4/5] -translate-x-1/2 overflow-hidden rounded-[2rem] border-4 border-white bg-cream shadow-xl">
-                  <FitPhoto src={thumbOf(heroPics[0].images[0])} alt={tr(heroPics[0].name, lang)} eager />
+                  <FitPhoto src={thumbOf(heroPics[0].images[0])} alt={tr(heroPics[0].name, lang)} priority />
                 </div>
               )}
               {heroPics[1] && (

@@ -22,17 +22,18 @@
   --f-head: var(--font-playfair), Georgia, serif;
 }
 
+/* Each language uses its own font for its letters. English words and numbers on those pages use Poppins. */
 html[lang="hi"] {
-  --f-body: var(--font-deva), system-ui, sans-serif;
-  --f-head: var(--font-deva), system-ui, sans-serif;
+  --f-body: var(--font-deva), var(--font-poppins), system-ui, sans-serif;
+  --f-head: var(--font-deva), var(--font-poppins), system-ui, sans-serif;
 }
 html[lang="te"] {
-  --f-body: var(--font-telugu), system-ui, sans-serif;
-  --f-head: var(--font-telugu), system-ui, sans-serif;
+  --f-body: var(--font-telugu), var(--font-poppins), system-ui, sans-serif;
+  --f-head: var(--font-telugu), var(--font-poppins), system-ui, sans-serif;
 }
 html[lang="ur"] {
-  --f-body: var(--font-urdu), system-ui, sans-serif;
-  --f-head: var(--font-urdu), system-ui, sans-serif;
+  --f-body: var(--font-urdu), var(--font-poppins), system-ui, sans-serif;
+  --f-head: var(--font-urdu), var(--font-poppins), system-ui, sans-serif;
 }
 
 @theme inline {

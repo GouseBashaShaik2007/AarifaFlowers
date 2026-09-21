@@ -6,7 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { OCCASIONS, TYPES, isLang, type Lang } from "@/lib/catalog";
 import { fmt, getDict } from "@/lib/i18n";
-import { listProducts } from "@/lib/store";
+import { getProducts } from "@/lib/publicData";
 import { customMessage, waLink } from "@/lib/whatsapp";
 
 type Search = { occasion?: string; type?: string; fresh?: string };
@@ -60,7 +60,7 @@ export default async function GarlandsPage({
   const fresh = sp.fresh === "1" ? "1" : undefined;
   const current: Search = { occasion, type, fresh };
 
-  const all = await listProducts();
+  const all = await getProducts();
   const shown = all.filter(
     (p) =>
       (!occasion || p.occasions.includes(occasion as never)) &&
@@ -127,9 +127,10 @@ export default async function GarlandsPage({
 
         {shown.length > 0 ? (
           <ul className="mt-2 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
-            {shown.map((p) => (
+            {shown.map((p, i) => (
               <li key={p.id}>
-                <ProductCard product={p} lang={lang} t={t} />
+                {/* The first row is what a visitor sees first, so its pictures are fetched at once. */}
+                <ProductCard product={p} lang={lang} t={t} priority={i < 2} />
               </li>
             ))}
           </ul>

@@ -5,7 +5,7 @@ import { cache } from "react";
 import { DEFAULT_SETTINGS, type Review, type SiteSettings } from "./content";
 import { DEFAULT_FAQ, type FaqSettings } from "./faq";
 import { DEFAULT_INSTAGRAM, isPlayerMode, type InstagramSettings } from "./instagram";
-import { readDoc, writeDoc } from "./store";
+import { readDoc, readDocs, writeDoc } from "./store";
 
 const SETTINGS_KEY = "site";
 const REVIEWS_KEY = "reviews";
@@ -13,12 +13,18 @@ const INSTAGRAM_KEY = "instagram";
 const FAQ_KEY = "faq";
 
 /**
+ * Every saved document a public page can need, fetched with one request and shared by everything that asks
+ * during the same page view. Without this each getter below made its own trip to the database.
+ */
+const loadDocs = cache(() => readDocs([SETTINGS_KEY, REVIEWS_KEY, INSTAGRAM_KEY, FAQ_KEY]));
+
+/**
  * The saved texts, or the suggested wording for anything the owner has not saved yet.
  * A saved empty text stays empty, which is how the owner hides the announcement bar.
  * Read once per request, however many components ask for it.
  */
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
-  const saved = await readDoc<Partial<SiteSettings>>(SETTINGS_KEY);
+  const saved = (await loadDocs())[SETTINGS_KEY] as Partial<SiteSettings> | undefined;
   return {
     announcementEnabled: saved?.announcementEnabled ?? DEFAULT_SETTINGS.announcementEnabled,
     announcement: saved?.announcement ?? DEFAULT_SETTINGS.announcement,
@@ -37,7 +43,10 @@ export async function listReviews(): Promise<Review[]> {
   return [...list].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 }
 
-export const getPublishedReviews = cache(async (): Promise<Review[]> => (await listReviews()).filter((r) => r.published));
+export const getPublishedReviews = cache(async (): Promise<Review[]> => {
+  const list = ((await loadDocs())[REVIEWS_KEY] as Review[] | undefined) ?? [];
+  return list.filter((r) => r.published).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+});
 
 export async function getReview(id: string): Promise<Review | null> {
   return (await listReviews()).find((r) => r.id === id) ?? null;
@@ -60,7 +69,7 @@ export async function deleteReview(id: string): Promise<void> {
 
 /** The saved Instagram settings, or the starter cards until the owner saves their own. */
 export const getInstagramSettings = cache(async (): Promise<InstagramSettings> => {
-  const saved = await readDoc<Partial<InstagramSettings>>(INSTAGRAM_KEY);
+  const saved = (await loadDocs())[INSTAGRAM_KEY] as Partial<InstagramSettings> | undefined;
   return {
     enabled: saved?.enabled ?? DEFAULT_INSTAGRAM.enabled,
     handle: saved?.handle || DEFAULT_INSTAGRAM.handle,
@@ -71,7 +80,7 @@ export const getInstagramSettings = cache(async (): Promise<InstagramSettings> =
 
 /** The saved FAQ, or the suggested questions until the owner saves their own. */
 export const getFaq = cache(async (): Promise<FaqSettings> => {
-  const saved = await readDoc<Partial<FaqSettings>>(FAQ_KEY);
+  const saved = (await loadDocs())[FAQ_KEY] as Partial<FaqSettings> | undefined;
   return {
     enabled: saved?.enabled ?? DEFAULT_FAQ.enabled,
     items: Array.isArray(saved?.items) ? saved.items : DEFAULT_FAQ.items,

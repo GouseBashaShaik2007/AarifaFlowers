@@ -11,15 +11,14 @@ import { formatPrice, formatPriceRange, productMessage, waLink } from "@/lib/wha
 
 export default async function AdminDashboard() {
   await requireAdmin();
-  const products = await listProducts();
-
-  // Counting taps is a bonus. If it fails, the rest of the page still works.
-  let taps: Record<string, number> = {};
-  try {
-    taps = await getTapCounts(30);
-  } catch (err) {
-    console.error(err);
-  }
+  // Both are asked for at the same moment. Counting taps is a bonus, so if it fails the rest of the page still works.
+  const [products, taps] = await Promise.all([
+    listProducts(),
+    getTapCounts(30).catch((err): Record<string, number> => {
+      console.error(err);
+      return {};
+    }),
+  ]);
 
   const rows: RowData[] = products.map((p) => ({
     id: p.id,

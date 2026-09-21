@@ -8,7 +8,18 @@ import PriceLabel from "./PriceLabel";
 import SaveButton from "./SaveButton";
 import WhatsAppButton from "./WhatsAppButton";
 
-export default function ProductCard({ product, lang, t }: { product: Product; lang: Lang; t: Dictionary }) {
+export default function ProductCard({
+  product,
+  lang,
+  t,
+  priority = false,
+}: {
+  product: Product;
+  lang: Lang;
+  t: Dictionary;
+  /** True for the first cards on a page, so their pictures are fetched at once. */
+  priority?: boolean;
+}) {
   const name = tr(product.name, lang);
   const length = tr(product.length, lang);
   const image = product.images[0];
@@ -21,7 +32,7 @@ export default function ProductCard({ product, lang, t }: { product: Product; la
         <Link href={href} className="absolute inset-0 block overflow-hidden" aria-label={name}>
           {image ? (
             <span className={`absolute inset-0 block transition duration-300 group-hover:scale-105 ${product.available ? "" : "opacity-60 grayscale-[35%]"}`}>
-              <FitPhoto src={thumbOf(image)} alt={name} shade />
+              <FitPhoto src={thumbOf(image)} alt={name} shade priority={priority} />
             </span>
           ) : (
             <span className="absolute inset-0 grid place-items-center text-5xl">💐</span>

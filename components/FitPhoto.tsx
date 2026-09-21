@@ -27,12 +27,15 @@ export default function FitPhoto({
   src,
   alt,
   eager = false,
+  priority = false,
   shade = false,
   className = "",
 }: {
   src: string;
   alt: string;
   eager?: boolean;
+  /** For the pictures a visitor sees first. Fetched at once and ahead of everything else on the page. */
+  priority?: boolean;
   /** Adds a soft dark shade along the top, so a badge or button placed there can be read on any photo. */
   shade?: boolean;
   className?: string;
@@ -47,7 +50,8 @@ export default function FitPhoto({
         onLoad={(e) => markFit(e.currentTarget)}
         src={src}
         alt={alt}
-        loading={eager ? "eager" : "lazy"}
+        loading={eager || priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : undefined}
         decoding="async"
         className={`peer absolute inset-0 h-full w-full ${
           whole

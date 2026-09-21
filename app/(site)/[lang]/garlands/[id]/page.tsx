@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cache } from "react";
 import Gallery from "@/components/Gallery";
 import GarlandOrder from "@/components/GarlandOrder";
 import { ArrowIcon } from "@/components/icons";
@@ -12,9 +11,9 @@ import { FLOWERS, OCCASIONS, TYPES, isLang, label, tr } from "@/lib/catalog";
 import { MAX_SAVED } from "@/lib/savedLimit";
 import { fmt, getDict } from "@/lib/i18n";
 import { getSiteSettings } from "@/lib/siteContent";
-import { getProduct, listProducts } from "@/lib/store";
+import { getProductById, getProducts } from "@/lib/publicData";
 
-const loadProduct = cache(getProduct);
+const loadProduct = getProductById;
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; id: string }> }): Promise<Metadata> {
   const { lang, id } = await params;
@@ -38,11 +37,12 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
   const name = tr(product.name, lang);
   const description = tr(product.description, lang);
   const length = tr(product.length, lang);
-  const settings = await getSiteSettings();
+  // The garlands are already loaded (that is how the garland was found), so only the texts are still to come.
+  const [settings, all] = await Promise.all([getSiteSettings(), getProducts()]);
   const delivery = tr(settings.delivery, lang);
   const leadTime = tr(settings.leadTime, lang);
 
-  const others = (await listProducts()).filter((p) => p.id !== product.id);
+  const others = all.filter((p) => p.id !== product.id);
   const related = [
     ...others.filter((p) => p.occasions.some((o) => product.occasions.includes(o))),
     ...others.filter((p) => !p.occasions.some((o) => product.occasions.includes(o))),

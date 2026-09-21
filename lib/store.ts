@@ -179,6 +179,24 @@ export async function readDoc<T>(key: string): Promise<T | null> {
   return ((await readContentFile())[key] as T) ?? null;
 }
 
+/**
+ * Reads several documents with a single request to the database. Every page needs the announcement texts, the FAQ,
+ * the reels and the stories, and asking for them one by one made each page wait for four extra round trips.
+ * A key with nothing saved is simply missing from the result.
+ */
+export async function readDocs(keys: string[]): Promise<Record<string, unknown>> {
+  if (usingSupabase) {
+    const { data, error } = await supabase().from("settings").select("key, data").in("key", keys);
+    if (error) {
+      console.error(`Could not read ${keys.join(", ")}: ${error.message}`);
+      return {};
+    }
+    return Object.fromEntries((data ?? []).map((row) => [row.key as string, row.data]));
+  }
+  const all = await readContentFile();
+  return Object.fromEntries(keys.filter((k) => all[k] !== undefined).map((k) => [k, all[k]]));
+}
+
 export async function writeDoc(key: string, value: unknown): Promise<void> {
   assertWritable();
   if (usingSupabase) {

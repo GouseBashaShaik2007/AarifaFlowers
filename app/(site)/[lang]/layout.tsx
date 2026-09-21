@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { preconnect } from "react-dom";
 import { notFound } from "next/navigation";
 import "../../globals.css";
 import Footer from "@/components/Footer";
@@ -32,8 +33,9 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   };
 }
 
+// Poppins is on every page (English words and numbers appear in every language), so only the others differ.
 const fontFor = {
-  en: poppins.variable,
+  en: "",
   hi: deva.variable,
   te: telugu.variable,
   ur: urdu.variable,
@@ -49,10 +51,18 @@ export default async function LangLayout({
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const t = getDict(lang);
+
+  // The garland photos come from another address. Opening that connection now, while the page is still being
+  // built, saves a visitor on a slow phone a few hundred milliseconds when the first photo is asked for.
+  try {
+    if (process.env.SUPABASE_URL) preconnect(new URL(process.env.SUPABASE_URL).origin);
+  } catch {
+    // A speed-up only. A badly typed address must never stop the site from opening.
+  }
   const settings = await getSiteSettings();
 
   return (
-    <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} data-scroll-behavior="smooth" className={`${playfair.variable} ${fontFor[lang]}`}>
+    <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} data-scroll-behavior="smooth" className={`${playfair.variable} ${poppins.variable} ${fontFor[lang]}`}>
       <body className="min-h-screen">
         <AnnouncementBar text={settings.announcementEnabled ? tr(settings.announcement, lang) : ""} />
         <Header lang={lang} />

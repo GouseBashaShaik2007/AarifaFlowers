@@ -31,6 +31,16 @@ export default function Footer({ lang, delivery }: { lang: Lang; delivery: strin
                 {t.allGarlands}
               </Link>
             </li>
+            <li>
+              <Link className="hover:text-rose" href={`/${lang}/custom`}>
+                {t.builderCta}
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-rose" href={`/${lang}/saved`}>
+                {t.savedTitle}
+              </Link>
+            </li>
           </ul>
         </div>
         <div>

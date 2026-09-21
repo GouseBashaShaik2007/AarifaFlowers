@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const loggedIn = await isAdmin();
   return (
-    <html lang="en" className={poppins.variable}>
+    <html lang="en" data-scroll-behavior="smooth" className={poppins.variable}>
       <body className="min-h-screen bg-cream">
         <header className="border-b border-line bg-white">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">

@@ -2,13 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowIcon } from "@/components/icons";
 import CustomerStories from "@/components/CustomerStories";
+import FaqSection from "@/components/FaqSection";
 import InstagramShowcase from "@/components/InstagramShowcase";
 import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { OCCASIONS, isLang, thumbOf, tr } from "@/lib/catalog";
 import { getDict } from "@/lib/i18n";
 import { visibleReels } from "@/lib/instagram";
-import { getInstagramSettings, getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
+import { getFaq, getInstagramSettings, getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
 import { listProducts } from "@/lib/store";
 import { customMessage, generalMessage, waLink } from "@/lib/whatsapp";
 
@@ -30,6 +31,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const sets = products.filter((p) => p.types.includes("set")).slice(0, 4);
   const reviews = (await getPublishedReviews()).slice(0, 6);
   const instagram = await getInstagramSettings();
+  const faq = await getFaq();
   const leadTime = tr((await getSiteSettings()).leadTime, lang);
   const heroPics = (featured.length ? featured : products).filter((p) => p.images[0]).slice(0, 3);
 
@@ -215,11 +217,23 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             <h2 className="h-display text-2xl font-semibold sm:text-3xl">✨ {t.customTitle}</h2>
             <p className="mt-2 text-white/90">{t.customText}</p>
           </div>
-          <WhatsAppButton href={waLink(customMessage)} variant="white" size="lg" className="shrink-0" track="custom">
-            {t.customCta}
-          </WhatsAppButton>
+          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:items-stretch">
+            <Link
+              href={`/${lang}/custom`}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-base font-semibold text-rose-deep transition hover:bg-cream active:scale-[0.98]"
+            >
+              {t.builderCta}
+              <ArrowIcon />
+            </Link>
+            <WhatsAppButton href={waLink(customMessage)} variant="outline" size="lg" track="custom">
+              {t.customPhoto}
+            </WhatsAppButton>
+          </div>
         </div>
       </section>
+
+      {/* Questions and answers. Last on the page, just above the footer. */}
+      {faq.enabled && <FaqSection items={faq.items} lang={lang} title={t.faqTitle} />}
     </>
   );
 }

@@ -87,6 +87,18 @@ To try the site the way Cloudflare runs it, copy `.env.local` to `.dev.vars` and
 - **Filter bar:** on the garlands page the occasion buttons stay under the header while you scroll. The other filters open under the Filters button.
 - **Supabase:** announcements and stories use a new `settings` table. If you set up Supabase earlier, run `supabase.sql` again. It is safe to repeat. Until you do, the site keeps using the suggested texts and saving an announcement shows an error that says so.
 
+## Custom builder, event date check, saved garlands and FAQ
+
+- **Design your garland** (`/en/custom`): six short steps for occasion, flowers, colours, length, event date, then budget and notes. It ends with a summary and a green Send my design on WhatsApp button. Every step except the occasion can be skipped, and skipped answers say "Not decided, please suggest" in the message. The message is always English. The flowers come from the flower list in `lib/catalog.ts`. The colours and lengths are in `lib/builder.ts`. The home page banner links to it, and the tap counter counts it as a custom request.
+- **Event date check:** on every garland page and in the builder. It tells the visitor how much notice the order needs and whether the chosen date fits, and it adds the date to the WhatsApp message. It cannot see your real bookings, so a good date only says that you confirm availability on WhatsApp. The rules are in `lib/orderRules.ts`:
+  - 2 days' notice: weddings, custom designs, car decoration, stage and backdrop. A garland in several groups follows the longest notice.
+  - 1 day (24 hours): pooja and religious, events and parties, special occasions.
+  - Same day is allowed only for the 1 day group, with a note to confirm on WhatsApp. After 2 PM India time it says a same-day order is unlikely.
+  - A date closer than the notice time is not blocked. The message just gets "(Short notice, please confirm if possible)".
+- **Saved garlands:** a heart on every garland card and page, and a heart with a count in the header. Up to 5 garlands can be saved. They are kept on the visitor's own phone, so there is no account and nothing is stored on your side. The Saved garlands page has one button that sends all of them in a single WhatsApp message.
+- **FAQ** (admin, FAQ tab): questions and answers in all four languages, shown at the bottom of the home page, just above the footer. Until you save your own, the site shows suggested answers. Check them against how you work: freshness hours, delivery charge, 50% advance for weddings, custom designs and stage setups, UPI and bank transfer, and the cancellation rule. Add, remove and move questions, or switch the section off. An empty language shows the English text. It uses the `settings` table, so if you set up Supabase before announcements existed, run `supabase.sql` again.
+- **Length** (admin, garland form): an optional length such as "5 ft" or "Standard varmala pair", in each language. It shows as a small tag on the card and on the garland page, and is added to the WhatsApp message. Leave it empty to show nothing.
+
 ## Instagram reels and videos
 
 The home page has a **See Our Garlands in Action** section above the custom design banner. Manage it in the admin page, **Instagram** tab:
@@ -137,7 +149,10 @@ Good to know:
 | --- | --- |
 | Occasions, garland types, flowers (names in all 4 languages) | `lib/catalog.ts` |
 | Words on the website in each language | `lib/i18n.ts` |
-| WhatsApp message wording | `lib/whatsapp.ts` |
+| WhatsApp message wording | `lib/whatsapp.ts` (garland and saved list), `lib/builder.ts` (custom builder) |
+| Notice times and the 2 PM same-day cutoff | `lib/orderRules.ts` |
+| Builder colours and lengths | `lib/builder.ts` |
+| Most garlands a visitor can save | `lib/savedLimit.ts` |
 | Colours | top of `app/globals.css` |
 
 ## Good to know

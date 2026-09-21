@@ -3,12 +3,14 @@
 
 import { cache } from "react";
 import { DEFAULT_SETTINGS, type Review, type SiteSettings } from "./content";
+import { DEFAULT_FAQ, type FaqSettings } from "./faq";
 import { DEFAULT_INSTAGRAM, isPlayerMode, type InstagramSettings } from "./instagram";
 import { readDoc, writeDoc } from "./store";
 
 const SETTINGS_KEY = "site";
 const REVIEWS_KEY = "reviews";
 const INSTAGRAM_KEY = "instagram";
+const FAQ_KEY = "faq";
 
 /**
  * The saved texts, or the suggested wording for anything the owner has not saved yet.
@@ -66,6 +68,23 @@ export const getInstagramSettings = cache(async (): Promise<InstagramSettings> =
     reels: Array.isArray(saved?.reels) ? saved.reels : DEFAULT_INSTAGRAM.reels,
   };
 });
+
+/** The saved FAQ, or the suggested questions until the owner saves their own. */
+export const getFaq = cache(async (): Promise<FaqSettings> => {
+  const saved = await readDoc<Partial<FaqSettings>>(FAQ_KEY);
+  return {
+    enabled: saved?.enabled ?? DEFAULT_FAQ.enabled,
+    items: Array.isArray(saved?.items) ? saved.items : DEFAULT_FAQ.items,
+  };
+});
+
+export async function hasSavedFaq(): Promise<boolean> {
+  return (await readDoc<unknown>(FAQ_KEY)) !== null;
+}
+
+export async function saveFaq(settings: FaqSettings): Promise<void> {
+  await writeDoc(FAQ_KEY, settings);
+}
 
 export async function hasSavedInstagramSettings(): Promise<boolean> {
   return (await readDoc<unknown>(INSTAGRAM_KEY)) !== null;

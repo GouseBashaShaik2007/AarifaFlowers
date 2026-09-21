@@ -146,6 +146,8 @@ export type Product = {
   price: number;
   /** Optional highest price. When set, the site shows a range such as ₹1,499 – ₹2,499. */
   maxPrice?: number;
+  /** Optional length, for example "5 ft" or "Standard varmala pair". Shown on the card only when filled in. */
+  length?: Text;
   occasions: OccasionId[];
   types: TypeId[];
   flowers: FlowerId[];

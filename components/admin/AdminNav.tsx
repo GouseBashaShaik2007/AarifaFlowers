@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/admin", label: "Garlands", match: (p: string) => p === "/admin" || p.startsWith("/admin/products") },
   { href: "/admin/reviews", label: "Customer stories", match: (p: string) => p.startsWith("/admin/reviews") },
   { href: "/admin/settings", label: "Announcements", match: (p: string) => p.startsWith("/admin/settings") },
+  { href: "/admin/faq", label: "FAQ", match: (p: string) => p.startsWith("/admin/faq") },
   { href: "/admin/instagram", label: "Instagram", match: (p: string) => p.startsWith("/admin/instagram") },
 ];
 

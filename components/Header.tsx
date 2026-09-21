@@ -5,6 +5,7 @@ import { getDict } from "@/lib/i18n";
 import { BUSINESS_NAME } from "@/lib/whatsapp";
 import { FlowerLogo } from "./icons";
 import LanguageSwitcher from "./LanguageSwitcher";
+import SavedLink from "./SavedLink";
 
 export default function Header({ lang }: { lang: Lang }) {
   const t = getDict(lang);
@@ -24,6 +25,13 @@ export default function Header({ lang }: { lang: Lang }) {
           >
             {t.navGarlands}
           </Link>
+          <Link
+            href={`/${lang}/custom`}
+            className="hidden rounded-full px-3 py-2 text-sm font-medium text-ink transition hover:text-rose sm:block"
+          >
+            {t.navCustom}
+          </Link>
+          <SavedLink href={`/${lang}/saved`} label={t.savedNav} />
           <Suspense fallback={<div className="h-9 w-28" />}>
             <LanguageSwitcher lang={lang} label={t.language} />
           </Suspense>

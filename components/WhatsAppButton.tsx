@@ -8,7 +8,7 @@ type Props = {
   children: React.ReactNode;
   size?: "md" | "lg";
   full?: boolean;
-  variant?: "solid" | "white";
+  variant?: "solid" | "white" | "outline";
   className?: string;
   /** A garland id, or "general" / "custom" for buttons that are not about one garland. Counts the tap. */
   track?: string;
@@ -28,7 +28,9 @@ export default function WhatsAppButton({
   const colors =
     variant === "white"
       ? "bg-white text-wa hover:bg-cream"
-      : "bg-wa text-white hover:bg-wa-deep shadow-[0_6px_18px_-6px_rgba(21,128,61,0.7)]";
+      : variant === "outline"
+        ? "border-2 border-white/80 text-white hover:bg-white/15"
+        : "bg-wa text-white hover:bg-wa-deep shadow-[0_6px_18px_-6px_rgba(21,128,61,0.7)]";
   return (
     <a
       href={href}

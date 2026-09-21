@@ -14,11 +14,13 @@ import {
   type TypeId,
 } from "@/lib/catalog";
 import type { Review } from "@/lib/content";
+import { MAX_ANSWER, MAX_FAQ, MAX_QUESTION, type FaqItem } from "@/lib/faq";
 import { cleanHandle, isPlayerMode, MAX_REELS, normalizeReelUrl, type PlayerMode, type Reel } from "@/lib/instagram";
 import {
   deleteReview,
   getInstagramSettings,
   getReview,
+  saveFaq,
   saveInstagramSettings,
   saveReview,
   saveSiteSettings,
@@ -79,6 +81,8 @@ export type ProductInput = {
   price: number;
   /** Optional highest price. Empty or null means the garland only has a starting price. */
   maxPrice?: number | null;
+  /** Optional length in each language. Empty means the garland shows no length. */
+  length?: Text;
   occasions: string[];
   types: string[];
   flowers: string[];
@@ -140,6 +144,7 @@ export async function saveProductAction(input: ProductInput): Promise<ActionResu
       };
     }
     const images = submitted.slice(0, 10);
+    const length = cleanText(input.length ?? {}, 60);
 
     const existing = input.id ? await getProduct(input.id) : null;
     const now = new Date().toISOString();
@@ -150,6 +155,7 @@ export async function saveProductAction(input: ProductInput): Promise<ActionResu
       description: cleanText(input.description, 1200),
       price,
       ...(maxPrice !== undefined ? { maxPrice } : {}),
+      ...(Object.keys(length).length > 0 ? { length } : {}),
       occasions: pick<OccasionId>(input.occasions ?? [], OCCASION_IDS),
       types: pick<TypeId>(input.types ?? [], TYPE_IDS),
       flowers: pick<FlowerId>(input.flowers ?? [], FLOWER_IDS),
@@ -299,6 +305,41 @@ export async function saveSettingsAction(input: {
       delivery: cleanText(input.delivery, 500),
       leadTime: cleanText(input.leadTime, 320),
     });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not save." };
+  }
+}
+
+// ---------- FAQ ----------
+
+export type FaqInput = {
+  enabled: boolean;
+  items: { id?: string; question: Text; answer: Text }[];
+};
+
+export async function saveFaqAction(input: FaqInput): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  try {
+    const rows = Array.isArray(input.items) ? input.items : [];
+    const items: FaqItem[] = [];
+    const used = new Set<string>();
+    for (const row of rows) {
+      const question = cleanText(row?.question ?? {}, MAX_QUESTION);
+      const answer = cleanText(row?.answer ?? {}, MAX_ANSWER);
+      // A row with nothing typed in it is just dropped.
+      if (Object.keys(question).length === 0 && Object.keys(answer).length === 0) continue;
+      const number = items.length + 1;
+      if (!question.en) return { ok: false, error: `Question ${number} needs an English question.` };
+      if (!answer.en) return { ok: false, error: `Question ${number} needs an English answer.` };
+      let id = typeof row.id === "string" ? row.id.replace(/[^a-zA-Z0-9-]/g, "").slice(0, 60) : "";
+      if (!id || used.has(id)) id = `q-${Math.random().toString(36).slice(2, 8)}`;
+      used.add(id);
+      items.push({ id, question, answer });
+    }
+    if (items.length > MAX_FAQ) return { ok: false, error: `You can have up to ${MAX_FAQ} questions.` };
+    await saveFaq({ enabled: input.enabled !== false, items });
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Could not save." };

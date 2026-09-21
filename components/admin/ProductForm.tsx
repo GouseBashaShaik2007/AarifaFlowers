@@ -107,6 +107,7 @@ export default function ProductForm({ product, aiEnabled }: { product?: Product;
 
   const [name, setName] = useState<Text>(product?.name ?? {});
   const [description, setDescription] = useState<Text>(product?.description ?? {});
+  const [length, setLength] = useState<Text>(product?.length ?? {});
   const [tab, setTab] = useState<Lang>("en");
   const [price, setPrice] = useState(product ? String(product.price) : "");
   const [maxPrice, setMaxPrice] = useState(product?.maxPrice ? String(product.maxPrice) : "");
@@ -157,6 +158,7 @@ export default function ProductForm({ product, aiEnabled }: { product?: Product;
         description,
         price: numeric,
         maxPrice: numericMax,
+        length,
         occasions,
         types,
         flowers,
@@ -210,7 +212,7 @@ export default function ProductForm({ product, aiEnabled }: { product?: Product;
         <ImageUploader ref={uploader} images={images} onChange={setImages} onWaitingChange={setWaiting} />
       </Card>
 
-      <Card title="Name and description" hint="English is required. Other languages are optional. If empty, the English text is shown.">
+      <Card title="Name, description and length" hint="English is required. Other languages are optional. If empty, the English text is shown.">
         <AiSuggest
           images={images}
           occasions={occasions}
@@ -271,6 +273,23 @@ export default function ProductForm({ product, aiEnabled }: { product?: Product;
               maxLength={1200}
               lang={tab}
             />
+          </div>
+          <div>
+            <label htmlFor="length" className="mb-1.5 block text-sm font-medium text-ink" dir="ltr">
+              Length <span className="font-normal text-muted">optional</span>
+            </label>
+            <input
+              id="length"
+              className={input}
+              value={length[tab] ?? ""}
+              onChange={(e) => setLang(setLength, tab, e.target.value)}
+              placeholder={tab === "en" ? "5 ft, or Standard varmala pair" : length.en || ""}
+              maxLength={60}
+              lang={tab}
+            />
+            <p className="mt-1 text-xs text-muted" dir="ltr">
+              Shown as a small tag on the garland card. Leave empty to show nothing.
+            </p>
           </div>
         </div>
       </Card>

@@ -4,6 +4,7 @@ import "../../globals.css";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import Header from "@/components/Header";
+import SavedToast from "@/components/SavedToast";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import { LANGS, isLang, isRtl, tr } from "@/lib/catalog";
 import { deva, playfair, poppins, telugu, urdu } from "@/lib/fonts";
@@ -51,13 +52,14 @@ export default async function LangLayout({
   const settings = await getSiteSettings();
 
   return (
-    <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className={`${playfair.variable} ${fontFor[lang]}`}>
+    <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} data-scroll-behavior="smooth" className={`${playfair.variable} ${fontFor[lang]}`}>
       <body className="min-h-screen">
         <AnnouncementBar text={settings.announcementEnabled ? tr(settings.announcement, lang) : ""} />
         <Header lang={lang} />
         <main>{children}</main>
         <Footer lang={lang} delivery={tr(settings.delivery, lang)} />
         <FloatingWhatsApp href={waLink(generalMessage)} label={t.chat} />
+        <SavedToast />
       </body>
     </html>
   );

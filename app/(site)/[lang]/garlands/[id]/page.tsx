@@ -3,15 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import Gallery from "@/components/Gallery";
+import GarlandOrder from "@/components/GarlandOrder";
 import { ArrowIcon } from "@/components/icons";
 import PriceLabel from "@/components/PriceLabel";
 import ProductCard from "@/components/ProductCard";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import SaveButton from "@/components/SaveButton";
 import { FLOWERS, OCCASIONS, TYPES, isLang, label, tr } from "@/lib/catalog";
-import { getDict } from "@/lib/i18n";
+import { MAX_SAVED } from "@/lib/savedLimit";
+import { fmt, getDict } from "@/lib/i18n";
 import { getSiteSettings } from "@/lib/siteContent";
 import { getProduct, listProducts } from "@/lib/store";
-import { productMessage, waLink } from "@/lib/whatsapp";
 
 const loadProduct = cache(getProduct);
 
@@ -36,7 +37,7 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
   const t = getDict(lang);
   const name = tr(product.name, lang);
   const description = tr(product.description, lang);
-  const orderHref = waLink(productMessage(product));
+  const length = tr(product.length, lang);
   const settings = await getSiteSettings();
   const delivery = tr(settings.delivery, lang);
   const leadTime = tr(settings.leadTime, lang);
@@ -67,18 +68,37 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
           <Gallery images={product.images} name={name} altTemplate={t.photoOf} />
 
           <div>
-            <span
-              className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
-                product.available ? "bg-leaf text-white" : "bg-line text-muted"
-              }`}
-            >
-              {product.available ? `🌿 ${t.freshToday}` : t.unavailable}
-            </span>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span
+                className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                  product.available ? "bg-leaf text-white" : "bg-line text-muted"
+                }`}
+              >
+                {product.available ? `🌿 ${t.freshToday}` : t.unavailable}
+              </span>
+              <SaveButton
+                id={product.id}
+                variant="pill"
+                labels={{
+                  save: t.saveGarland,
+                  unsave: t.unsaveGarland,
+                  full: fmt(t.savedFull, { n: MAX_SAVED }),
+                  added: t.savedAdded,
+                }}
+              />
+            </div>
             <h1 className="h-display mt-3 text-3xl font-semibold text-ink sm:text-4xl">{name}</h1>
             <PriceLabel t={t} price={product.price} maxPrice={product.maxPrice} className="mt-3 block text-2xl text-rose-deep" />
             <p className="mt-1 text-sm text-muted">{product.maxPrice && product.maxPrice > product.price ? t.rangeNote : t.priceNote}</p>
 
             {description && <p className="mt-5 text-base text-ink/90">{description}</p>}
+
+            {length && (
+              <p className="mt-5 text-sm">
+                <span className="font-semibold uppercase tracking-wide text-muted">{t.lengthLabel}: </span>
+                <span className="rounded-full bg-rose-soft px-3 py-1 text-rose-deep">{length}</span>
+              </p>
+            )}
 
             {product.flowers.length > 0 && (
               <div className="mt-6">
@@ -114,11 +134,7 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
               </div>
             )}
 
-            <div className="mt-6 hidden md:block">
-              <WhatsAppButton href={orderHref} size="lg" full track={product.id}>
-                {t.orderWhatsApp}
-              </WhatsAppButton>
-            </div>
+            <GarlandOrder product={product} t={t} />
           </div>
         </div>
 
@@ -136,15 +152,6 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
         )}
       </div>
 
-      {/* Order bar that stays on screen on phones */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 p-3 backdrop-blur md:hidden">
-        <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <PriceLabel t={t} price={product.price} maxPrice={product.maxPrice} className="shrink-0 text-sm text-rose-deep" />
-          <WhatsAppButton href={orderHref} full className="flex-1" track={product.id}>
-            {t.orderWhatsApp}
-          </WhatsAppButton>
-        </div>
-      </div>
     </div>
   );
 }

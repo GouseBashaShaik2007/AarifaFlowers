@@ -9,7 +9,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { Product } from "./catalog";
+import { thumbOf, type Product } from "./catalog";
 import { SEED_PRODUCTS } from "./seed";
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -56,7 +56,8 @@ async function readLocal(): Promise<Product[]> {
     const raw = await fs.readFile(PRODUCTS_FILE, "utf8");
     return JSON.parse(raw) as Product[];
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return SEED_PRODUCTS;
+    // A copy, so saving a garland never changes the built-in sample list itself.
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [...SEED_PRODUCTS];
     throw err;
   }
 }
@@ -260,12 +261,18 @@ export async function getTapCounts(days = 30): Promise<Record<string, number>> {
   return totals;
 }
 
-/** Stores a processed photo (full size and thumbnail) and returns the public URL of the full size one. */
-export async function putImage(full: Buffer, thumb: Buffer, contentType = "image/webp"): Promise<string> {
+const IMAGE_EXTENSION: Record<string, string> = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
+
+/**
+ * Stores a processed photo (full size and thumbnail) and returns the public URL of the full size one.
+ * The file name says what the file really is. A cut-out with a see-through background gets -c in its name.
+ */
+export async function putImage(full: Buffer, thumb: Buffer, contentType = "image/webp", cutout = false): Promise<string> {
   assertWritable();
-  const base = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-  const fullName = `${base}.webp`;
-  const thumbName = `${base}-t.webp`;
+  const ext = IMAGE_EXTENSION[contentType] ?? "webp";
+  const base = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}${cutout ? "-c" : ""}`;
+  const fullName = `${base}.${ext}`;
+  const thumbName = `${base}-t.${ext}`;
 
   if (usingSupabase) {
     const bucket = supabase().storage.from(BUCKET);
@@ -302,14 +309,14 @@ export async function putVideo(data: Buffer): Promise<string> {
 
 /** Deletes a photo we stored ourselves. Sample photos and unknown URLs are left alone. */
 export async function removeImage(url: string): Promise<void> {
-  const thumbUrl = url.replace(/\.webp$/, "-t.webp");
+  const thumbUrl = thumbOf(url);
   try {
     if (usingSupabase) {
       const marker = `/storage/v1/object/public/${BUCKET}/`;
       const at = url.indexOf(marker);
       if (at < 0) return;
       const name = url.slice(at + marker.length);
-      await supabase().storage.from(BUCKET).remove([name, name.replace(/\.webp$/, "-t.webp")]);
+      await supabase().storage.from(BUCKET).remove([name, thumbOf(name)]);
       return;
     }
     if (url.startsWith(LOCAL_URL_PREFIX)) {

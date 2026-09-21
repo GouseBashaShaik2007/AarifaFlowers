@@ -14,10 +14,13 @@ export async function POST(request: Request) {
 
   let full: Buffer | null;
   let thumb: Buffer | null;
+  let cutout = false;
   try {
     const form = await request.formData();
     full = await readPhoto(form.get("file"));
     thumb = await readPhoto(form.get("thumb"));
+    // The browser says when the photo has a see-through background, so the site can show it whole.
+    cutout = form.get("cutout") === "1";
   } catch {
     return Response.json({ error: "Could not read the upload." }, { status: 400 });
   }
@@ -32,7 +35,7 @@ export async function POST(request: Request) {
   if (!thumb || sniffImage(thumb) !== type) thumb = full;
 
   try {
-    const url = await putImage(full, thumb, type);
+    const url = await putImage(full, thumb, type, cutout);
     return Response.json({ url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload failed.";

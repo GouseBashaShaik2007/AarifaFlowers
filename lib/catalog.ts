@@ -161,4 +161,11 @@ export type Product = {
 };
 
 /** Thumbnail URL for a full-size image URL. Both are written on upload. */
-export const thumbOf = (url: string) => url.replace(/\.webp$/, "-t.webp");
+export const thumbOf = (url: string) => url.replace(/\.(webp|jpg|png)$/, "-t.$1");
+
+/**
+ * True for a garland cut out of its photo, which has a see-through background. The upload marks these with -c in
+ * the file name. They show whole on the soft pink backdrop. Every other photo fills its card.
+ * The sample garlands are drawings that were cut out too.
+ */
+export const isCutout = (url: string) => url.startsWith("/samples/") || /-c(-t)?\.(webp|png)$/.test(url);

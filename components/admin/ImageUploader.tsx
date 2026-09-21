@@ -53,10 +53,12 @@ async function downscale(file: File): Promise<Blob> {
 
 async function uploadBlob(blob: Blob, name: string): Promise<string> {
   // Crop, shrink and convert here in the browser. The server only checks and stores the result.
-  const { full, thumb } = await prepareForUpload(blob);
+  const { full, thumb, transparent } = await prepareForUpload(blob);
   const form = new FormData();
   form.append("file", full, name);
   form.append("thumb", thumb, "thumb-" + name);
+  // A cut-out is shown whole on the soft backdrop. An ordinary photo fills its card.
+  if (transparent) form.append("cutout", "1");
   const res = await fetch("/api/admin/upload", { method: "POST", body: form });
   let data: { url?: string; error?: string } = {};
   try {
@@ -81,14 +83,14 @@ export default function ImageUploader({
   onChange,
   onWaitingChange,
   maxPhotos = MAX_PHOTOS,
-  autoRemoveDefault = true,
+  autoRemoveDefault = false,
   ref,
 }: {
   images: string[];
   onChange: (next: string[]) => void;
   /** How many photos may be added. Use 1 for a single photo. */
   maxPhotos?: number;
-  /** Whether Remove background starts switched on. Turn it off for real customer photos. */
+  /** Whether Remove background starts switched on. Off by default: the site shows your original photos. */
   autoRemoveDefault?: boolean;
   ref?: Ref<UploaderHandle>;
   /** Reports how many photos are still waiting for review, so the form can warn before saving. */

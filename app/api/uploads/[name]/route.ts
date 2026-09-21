@@ -1,14 +1,16 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { sniffImage } from "@/lib/images";
 import { UPLOAD_DIR } from "@/lib/store";
 
 // Serves photos and videos uploaded while running with local file storage.
 // On Cloudflare or Vercel with Supabase, files come straight from Supabase and this route is not used.
 export async function GET(request: Request, ctx: { params: Promise<{ name: string }> }) {
   const { name } = await ctx.params;
-  const match = /^[a-z0-9-]+\.(webp|mp4)$/i.exec(name);
+  const match = /^[a-z0-9-]+\.(webp|jpg|png|mp4)$/i.exec(name);
   if (!match) return new Response("Not found", { status: 404 });
-  const isVideo = match[1].toLowerCase() === "mp4";
+  const extension = match[1].toLowerCase();
+  const isVideo = extension === "mp4";
 
   let file: Buffer;
   try {
@@ -18,7 +20,8 @@ export async function GET(request: Request, ctx: { params: Promise<{ name: strin
   }
 
   const headers: Record<string, string> = {
-    "Content-Type": isVideo ? "video/mp4" : "image/webp",
+    // Photos saved before the file names were honest can hold PNG data under a .webp name, so look at the bytes.
+    "Content-Type": isVideo ? "video/mp4" : (sniffImage(file) ?? "image/webp"),
     "Cache-Control": "public, max-age=31536000, immutable",
     "Accept-Ranges": "bytes",
   };

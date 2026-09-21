@@ -1,25 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { thumbOf } from "@/lib/catalog";
+import { isCutout, thumbOf } from "@/lib/catalog";
 
 export default function Gallery({ images, name, altTemplate }: { images: string[]; name: string; altTemplate: string }) {
   const [active, setActive] = useState(0);
   const alt = (i: number) => altTemplate.replace("{n}", String(i + 1)).replace("{name}", name);
 
   if (images.length === 0) {
-    return <div className="photo-bg grid aspect-square place-items-center rounded-3xl border border-line text-6xl">💐</div>;
+    return <div className="photo-bg grid aspect-[4/5] place-items-center rounded-3xl border border-line text-6xl">💐</div>;
   }
 
   return (
     <div className="space-y-3">
-      <div className="photo-bg relative aspect-square overflow-hidden rounded-3xl border border-line">
+      {/* The same tall 4:5 shape as the cards. The whole photo is shown here, so a customer sees all of the garland. */}
+      <div className="photo-bg relative aspect-[4/5] overflow-hidden rounded-3xl border border-line">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           key={images[active]}
           src={images[active]}
           alt={alt(active)}
-          className="absolute inset-0 h-full w-full object-contain p-5 sm:p-8"
+          className={`absolute inset-0 h-full w-full object-contain ${isCutout(images[active]) ? "p-5 sm:p-8" : ""}`}
         />
       </div>
       {images.length > 1 && (
@@ -36,7 +37,7 @@ export default function Gallery({ images, name, altTemplate }: { images: string[
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={thumbOf(src)} alt="" className="h-full w-full object-contain p-1.5" />
+                <img src={thumbOf(src)} alt="" className={`h-full w-full ${isCutout(src) ? "object-contain p-1.5" : "object-cover"}`} />
               </button>
             </li>
           ))}

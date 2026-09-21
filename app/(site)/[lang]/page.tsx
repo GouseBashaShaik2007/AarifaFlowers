@@ -3,10 +3,11 @@ import { notFound } from "next/navigation";
 import { ArrowIcon } from "@/components/icons";
 import CustomerStories from "@/components/CustomerStories";
 import FaqSection from "@/components/FaqSection";
+import FitPhoto from "@/components/FitPhoto";
 import InstagramShowcase from "@/components/InstagramShowcase";
 import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import { OCCASIONS, isLang, thumbOf, tr } from "@/lib/catalog";
+import { OCCASIONS, isCutout, isLang, thumbOf, tr } from "@/lib/catalog";
 import { getDict } from "@/lib/i18n";
 import { visibleReels } from "@/lib/instagram";
 import { getFaq, getInstagramSettings, getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
@@ -69,29 +70,36 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
           {heroPics.length > 0 && (
             <div className="relative mx-auto aspect-square w-full max-w-md">
               <div className="absolute inset-4 rounded-full bg-gradient-to-br from-rose-soft via-white to-marigold-soft" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={heroPics[0].images[0]}
-                alt={tr(heroPics[0].name, lang)}
-                className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-xl"
-              />
+              {isCutout(heroPics[0].images[0]) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={thumbOf(heroPics[0].images[0])}
+                  alt={tr(heroPics[0].name, lang)}
+                  className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-xl"
+                />
+              ) : (
+                // An ordinary photo is shown as a tall framed picture, not as a rectangle inside the round shape.
+                <div className="absolute inset-y-1 left-1/2 aspect-[4/5] -translate-x-1/2 overflow-hidden rounded-[2rem] border-4 border-white bg-cream shadow-xl">
+                  <FitPhoto src={thumbOf(heroPics[0].images[0])} alt={tr(heroPics[0].name, lang)} eager />
+                </div>
+              )}
               {heroPics[1] && (
-                <div className="absolute -bottom-1 start-0 h-28 w-28 rounded-full border-4 border-white bg-cream shadow-lg sm:h-32 sm:w-32">
+                <div className="absolute -bottom-1 start-0 h-28 w-28 overflow-hidden rounded-full border-4 border-white bg-cream shadow-lg sm:h-32 sm:w-32">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={thumbOf(heroPics[1].images[0])}
                     alt={tr(heroPics[1].name, lang)}
-                    className="h-full w-full object-contain p-2"
+                    className={`h-full w-full ${isCutout(heroPics[1].images[0]) ? "object-contain p-2" : "object-cover"}`}
                   />
                 </div>
               )}
               {heroPics[2] && (
-                <div className="absolute end-0 top-2 h-24 w-24 rounded-full border-4 border-white bg-cream shadow-lg sm:h-28 sm:w-28">
+                <div className="absolute end-0 top-2 h-24 w-24 overflow-hidden rounded-full border-4 border-white bg-cream shadow-lg sm:h-28 sm:w-28">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={thumbOf(heroPics[2].images[0])}
                     alt={tr(heroPics[2].name, lang)}
-                    className="h-full w-full object-contain p-2"
+                    className={`h-full w-full ${isCutout(heroPics[2].images[0]) ? "object-contain p-2" : "object-cover"}`}
                   />
                 </div>
               )}
@@ -119,7 +127,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
                         src={img.src}
                         alt={img.alt}
                         loading="lazy"
-                        className="absolute inset-0 h-full w-full object-contain p-2 transition group-hover:scale-105"
+                        className={`absolute inset-0 h-full w-full transition group-hover:scale-105 ${isCutout(img.src) ? "object-contain p-2" : "object-cover"}`}
                       />
                     ) : (
                       <span className="text-4xl">{o.emoji}</span>

@@ -5,7 +5,9 @@
 // run on Cloudflare Workers, so the phone or computer does the work instead.
 
 const FULL_SIDE = 1200;
-const THUMB_SIDE = 600;
+const THUMB_SIDE = 720;
+// Quality for the JPEG copy used when the browser cannot make WebP. A photo looks the same at 82 and weighs far less than a PNG.
+const JPEG_QUALITY = 0.82;
 // A pixel counts as "part of the garland" when it is more than about 5% visible.
 const VISIBLE_ALPHA = 12;
 
@@ -26,8 +28,11 @@ async function toCanvas(blob: Blob): Promise<Canvas> {
   return canvas;
 }
 
-/** Crops a cut-out photo to the garland, with a small margin, so every product fills its card the same way. */
-function trimTransparent(source: Canvas): Canvas {
+/**
+ * Crops a cut-out photo to the garland, with a small margin, so every product fills its card the same way.
+ * Also says whether the picture has see-through parts. An ordinary photo has none and is never cropped here.
+ */
+function trimTransparent(source: Canvas): { canvas: Canvas; transparent: boolean } {
   const { width, height } = source;
   const { data } = source.getContext("2d")!.getImageData(0, 0, width, height);
 
@@ -48,17 +53,17 @@ function trimTransparent(source: Canvas): Canvas {
       }
     }
   }
-  if (!hasTransparency || right < 0) return source;
+  if (!hasTransparency || right < 0) return { canvas: source, transparent: false };
 
   const w = right - left + 1;
   const h = bottom - top + 1;
   // Ignore a crop that would leave almost nothing. That means it was not a real cut-out.
-  if (w <= 80 || h <= 80) return source;
+  if (w <= 80 || h <= 80) return { canvas: source, transparent: hasTransparency };
 
   const pad = Math.round(Math.max(w, h) * 0.04);
   const out = newCanvas(w + pad * 2, h + pad * 2);
   out.getContext("2d")!.drawImage(source, left, top, w, h, pad, pad, w, h);
-  return out;
+  return { canvas: out, transparent: true };
 }
 
 /** Shrinks to fit inside a square of `side` pixels. Never makes a photo bigger. */
@@ -72,19 +77,26 @@ function fitInside(source: Canvas, side: number): Canvas {
   return out;
 }
 
-function encode(canvas: Canvas, quality: number): Promise<Blob> {
+function toBlob(canvas: Canvas, type: string, quality?: number): Promise<Blob> {
   return new Promise((resolve, reject) =>
-    canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("Could not prepare this photo."))),
-      "image/webp",
-      quality,
-    ),
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Could not prepare this photo."))), type, quality),
   );
 }
 
-export async function prepareForUpload(photo: Blob): Promise<{ full: Blob; thumb: Blob }> {
-  const trimmed = trimTransparent(await toCanvas(photo));
-  const full = await encode(fitInside(trimmed, FULL_SIDE), 0.86);
-  const thumb = await encode(fitInside(trimmed, THUMB_SIDE), 0.8);
-  return { full, thumb };
+/**
+ * Makes a small file. WebP is the smallest, but some browsers (Safari on an iPhone) cannot create it and quietly
+ * hand back a PNG instead, which is ten times bigger. The blob says what it really is, so check it.
+ * A plain photo then becomes a JPEG. A cut-out has to keep its see-through parts, so it stays a PNG.
+ */
+async function encode(canvas: Canvas, quality: number, transparent: boolean): Promise<Blob> {
+  const webp = await toBlob(canvas, "image/webp", quality);
+  if (webp.type === "image/webp" || transparent) return webp;
+  return toBlob(canvas, "image/jpeg", JPEG_QUALITY);
+}
+
+export async function prepareForUpload(photo: Blob): Promise<{ full: Blob; thumb: Blob; transparent: boolean }> {
+  const { canvas, transparent } = trimTransparent(await toCanvas(photo));
+  const full = await encode(fitInside(canvas, FULL_SIDE), 0.86, transparent);
+  const thumb = await encode(fitInside(canvas, THUMB_SIDE), 0.8, transparent);
+  return { full, thumb, transparent };
 }

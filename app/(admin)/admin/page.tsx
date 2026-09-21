@@ -1,6 +1,7 @@
 import Link from "next/link";
 import DailyReset from "@/components/admin/DailyReset";
 import LoadSamplesButton from "@/components/admin/LoadSamplesButton";
+import PhotoTuneUp from "@/components/admin/PhotoTuneUp";
 import ProductList from "@/components/admin/ProductList";
 import type { RowData } from "@/components/admin/ProductRow";
 import { FLOWERS, LANGS, OCCASIONS, TYPES, label, thumbOf, tr } from "@/lib/catalog";
@@ -114,6 +115,10 @@ export default async function AdminDashboard() {
             </p>
           )}
         </section>
+      )}
+
+      {rows.length > 0 && !storageReadOnly && (
+        <PhotoTuneUp items={products.map((p) => ({ id: p.id, name: tr(p.name, "en"), images: p.images }))} />
       )}
 
       {rows.length > 0 ? (

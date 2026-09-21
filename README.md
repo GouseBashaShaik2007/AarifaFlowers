@@ -4,7 +4,7 @@ A catalogue website for fresh handmade garlands. Customers browse photos by occa
 
 - Languages: English, Hindi, Telugu, Urdu (Urdu reads right to left)
 - Orders: a WhatsApp message with the garland name and starting price already filled in
-- Admin: add, edit and delete garlands, upload photos with automatic background removal, set a starting price or a price range, Fresh Today, Featured
+- Admin: add, edit and delete garlands, upload photos (optional background removal), set a starting price or a price range, Fresh Today, Featured
 - Admin list: search, filters, bulk actions, and a count of how often customers tap Order on WhatsApp, made for use on a phone
 - WhatsApp number: set in `NEXT_PUBLIC_WHATSAPP_NUMBER` (in `.env.local` and in your Cloudflare settings). The buttons and the number shown in the footer both follow it.
 
@@ -87,6 +87,15 @@ To try the site the way Cloudflare runs it, copy `.env.local` to `.dev.vars` and
 - **Filter bar:** on the garlands page the occasion buttons stay under the header while you scroll. The other filters open under the Filters button.
 - **Supabase:** announcements and stories use a new `settings` table. If you set up Supabase earlier, run `supabase.sql` again. It is safe to repeat. Until you do, the site keeps using the suggested texts and saving an announcement shows an error that says so.
 
+## How photos are shown and stored
+
+- **Card shape:** every garland card uses a tall 4:5 frame, the shape of a hanging garland. An ordinary photo fills the frame, is cropped a little at the edges, and leans towards the top so the top of the garland stays in view. Nothing is ever stretched.
+- **Very narrow or very wide photos** are shown whole on the soft pink backdrop instead of being cropped hard. The limits are `FILL_MIN_RATIO` and `FILL_MAX_RATIO` in `components/FitPhoto.tsx`. A photo between 0.57 and 1.15 (width divided by height) fills the frame.
+- **Cut-out photos** (background removed) are shown whole on the pink backdrop. The upload marks them with `-c` in the file name.
+- **The garland page** shows the whole photo in the same 4:5 shape, so a customer sees all of the garland. The home page hero shows a photo as a framed picture, and the round pictures fill their circles.
+- **Photo files:** the browser makes a small WebP copy. Some browsers, mainly Safari on an iPhone, cannot make WebP and quietly give back a PNG ten times the size. For an ordinary photo the site then makes a JPEG instead, at about 82% quality. File names now say what the file really is (`.webp`, `.jpg` or `.png`).
+- **Make photos load faster** (admin, Garlands tab, Photo speed card): photos added before this fix may still be heavy PNGs. The button downloads each heavy photo, saves a light copy through the same steps a new upload uses, points the garland at the copy and deletes the heavy file. Photos that are already light are left alone, and it is safe to press again. The original file is not kept anywhere, so the copy is made from the 1200 pixel version stored on the site. Keep the page open while it works.
+
 ## Custom builder, event date check, saved garlands and FAQ
 
 - **Design your garland** (`/en/custom`): six short steps for occasion, flowers, colours, length, event date, then budget and notes. It ends with a summary and a green Send my design on WhatsApp button. Every step except the occasion can be skipped, and skipped answers say "Not decided, please suggest" in the message. The message is always English. The flowers come from the flower list in `lib/catalog.ts`. The colours and lengths are in `lib/builder.ts`. The home page banner links to it, and the tap counter counts it as a custom request.
@@ -157,7 +166,7 @@ Good to know:
 
 ## Good to know
 
-- **Background removal** runs inside your browser, so it costs nothing and photos are not sent to any service. The first photo takes about 15 seconds because the tool downloads once. Later photos are faster. You can turn it off per upload, or choose the original photo after seeing before and after.
+- **Background removal** is off by default, because the site is built to show your original photos. Tick **Remove background automatically** in the garland form to try it. It runs inside your browser, so it costs nothing and photos are not sent to any service. The first photo takes about 15 seconds because the tool downloads once. You can choose the original photo after seeing before and after.
 - **Translations** for Hindi, Telugu and Urdu were written quickly. Ask a native speaker to read them once, especially the shop name spelling and the button texts.
 - **Product names** can be entered in each language in the admin page. If a language is empty, the English text is shown.
 - The WhatsApp order message is always in English so that you read the same format every time.

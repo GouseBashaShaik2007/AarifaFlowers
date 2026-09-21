@@ -180,6 +180,39 @@ export async function saveProductAction(input: ProductInput): Promise<ActionResu
   }
 }
 
+/**
+ * Puts lighter copies of a garland's photos in place of the heavy ones, keeping their order, then deletes the
+ * heavy files. The browser has already made and uploaded the new copies. Only photos the garland really has are
+ * touched, so this cannot be used to change anything else.
+ */
+export async function swapPhotosAction(id: string, swaps: { from: string; to: string }[]): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  try {
+    const product = await getProduct(id);
+    if (!product) return { ok: false, error: "Garland not found." };
+
+    const replacement = new Map<string, string>();
+    for (const swap of Array.isArray(swaps) ? swaps.slice(0, 10) : []) {
+      if (typeof swap?.from !== "string" || !product.images.includes(swap.from)) continue;
+      if (!goodPhotoAddress(swap.to)) return { ok: false, error: "A new photo has an address that is not allowed. Nothing was changed." };
+      replacement.set(swap.from, swap.to);
+    }
+    if (replacement.size === 0) return { ok: true, count: 0 };
+
+    await saveProduct({
+      ...product,
+      images: product.images.map((url) => replacement.get(url) ?? url),
+      updatedAt: new Date().toISOString(),
+    });
+    // Only after the garland points at the new copies is it safe to delete the heavy ones.
+    for (const from of replacement.keys()) await removeImage(from);
+    return { ok: true, count: replacement.size };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not update the photos." };
+  }
+}
+
 export async function deleteProductAction(id: string): Promise<ActionResult> {
   const denied = await guard();
   if (denied) return denied;

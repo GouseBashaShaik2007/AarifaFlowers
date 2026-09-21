@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowIcon } from "@/components/icons";
 import CustomerStories from "@/components/CustomerStories";
+import InstagramShowcase from "@/components/InstagramShowcase";
 import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { OCCASIONS, isLang, thumbOf, tr } from "@/lib/catalog";
 import { getDict } from "@/lib/i18n";
-import { getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
+import { getInstagramSettings, getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
 import { listProducts } from "@/lib/store";
 import { customMessage, generalMessage, waLink } from "@/lib/whatsapp";
 
@@ -27,6 +28,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const featured = products.filter((p) => p.featured).slice(0, 8);
   const sets = products.filter((p) => p.types.includes("set")).slice(0, 4);
   const reviews = (await getPublishedReviews()).slice(0, 6);
+  const instagram = await getInstagramSettings();
   const leadTime = tr((await getSiteSettings()).leadTime, lang);
   const heroPics = (featured.length ? featured : products).filter((p) => p.images[0]).slice(0, 3);
 
@@ -201,6 +203,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
           <p className="mt-4 rounded-2xl bg-marigold-soft px-4 py-3 text-sm font-medium text-ink">⏱️ {leadTime}</p>
         )}
       </section>
+
+      {/* Instagram reels */}
+      {instagram.enabled && instagram.reels.length > 0 && <InstagramShowcase t={t} settings={instagram} />}
 
       {/* Custom design */}
       <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6">

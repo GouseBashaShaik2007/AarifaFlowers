@@ -6,7 +6,7 @@ import { LANGS, LANG_LABEL, isRtl, tr, type Lang } from "@/lib/catalog";
 import type { SiteSettings } from "@/lib/content";
 import AnnouncementBar from "@/components/AnnouncementBar";
 
-type FieldKey = keyof SiteSettings;
+type FieldKey = "announcement" | "delivery" | "leadTime";
 
 const FIELDS: { key: FieldKey; title: string; hint: string; rows: number; max: number }[] = [
   {
@@ -100,6 +100,29 @@ export default function SettingsForm({ initial, defaults }: { initial: SiteSetti
               Use suggested text
             </button>
           </div>
+          {f.key === "announcement" && (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={values.announcementEnabled}
+              onClick={() => setValues((v) => ({ ...v, announcementEnabled: !v.announcementEnabled }))}
+              className="mt-3 flex min-h-14 w-full items-center justify-between gap-4 rounded-2xl border border-line bg-cream/60 p-4 text-start"
+            >
+              <span>
+                <span className="block font-medium text-ink">Show the announcement bar</span>
+                <span className="block text-sm text-muted">Turn off to hide the bar. Your text is kept for later.</span>
+              </span>
+              <span
+                className={`relative h-7 w-12 shrink-0 rounded-full transition ${values.announcementEnabled ? "bg-leaf" : "bg-line"}`}
+              >
+                <span
+                  className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${
+                    values.announcementEnabled ? "start-[1.4rem]" : "start-0.5"
+                  }`}
+                />
+              </span>
+            </button>
+          )}
           <textarea
             aria-label={`${f.title} in ${LANG_LABEL[tab]}`}
             rows={f.rows}
@@ -120,10 +143,12 @@ export default function SettingsForm({ initial, defaults }: { initial: SiteSetti
               <p className="bg-cream px-3 py-1 text-xs font-medium text-muted" dir="ltr">
                 Preview in {LANG_LABEL[tab]}
               </p>
-              {tr(values.announcement, tab) ? (
+              {values.announcementEnabled && tr(values.announcement, tab) ? (
                 <AnnouncementBar text={tr(values.announcement, tab)} />
               ) : (
-                <p className="px-4 py-3 text-center text-sm text-muted">The bar is hidden.</p>
+                <p className="px-4 py-3 text-center text-sm text-muted">
+                  {values.announcementEnabled ? "The bar is hidden because the text is empty." : "The bar is switched off."}
+                </p>
               )}
             </div>
           )}

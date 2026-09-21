@@ -3,10 +3,12 @@
 
 import { cache } from "react";
 import { DEFAULT_SETTINGS, type Review, type SiteSettings } from "./content";
+import { DEFAULT_INSTAGRAM, type InstagramSettings } from "./instagram";
 import { readDoc, writeDoc } from "./store";
 
 const SETTINGS_KEY = "site";
 const REVIEWS_KEY = "reviews";
+const INSTAGRAM_KEY = "instagram";
 
 /**
  * The saved texts, or the suggested wording for anything the owner has not saved yet.
@@ -16,6 +18,7 @@ const REVIEWS_KEY = "reviews";
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   const saved = await readDoc<Partial<SiteSettings>>(SETTINGS_KEY);
   return {
+    announcementEnabled: saved?.announcementEnabled ?? DEFAULT_SETTINGS.announcementEnabled,
     announcement: saved?.announcement ?? DEFAULT_SETTINGS.announcement,
     delivery: saved?.delivery ?? DEFAULT_SETTINGS.delivery,
     leadTime: saved?.leadTime ?? DEFAULT_SETTINGS.leadTime,
@@ -51,4 +54,22 @@ export async function deleteReview(id: string): Promise<void> {
     REVIEWS_KEY,
     (await listReviews()).filter((r) => r.id !== id),
   );
+}
+
+/** The saved Instagram settings, or the starter cards until the owner saves their own. */
+export const getInstagramSettings = cache(async (): Promise<InstagramSettings> => {
+  const saved = await readDoc<Partial<InstagramSettings>>(INSTAGRAM_KEY);
+  return {
+    enabled: saved?.enabled ?? DEFAULT_INSTAGRAM.enabled,
+    handle: saved?.handle || DEFAULT_INSTAGRAM.handle,
+    reels: Array.isArray(saved?.reels) ? saved.reels : DEFAULT_INSTAGRAM.reels,
+  };
+});
+
+export async function hasSavedInstagramSettings(): Promise<boolean> {
+  return (await readDoc<unknown>(INSTAGRAM_KEY)) !== null;
+}
+
+export async function saveInstagramSettings(settings: InstagramSettings): Promise<void> {
+  await writeDoc(INSTAGRAM_KEY, settings);
 }

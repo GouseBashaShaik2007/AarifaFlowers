@@ -53,7 +53,7 @@ export default async function LangLayout({
   return (
     <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className={`${playfair.variable} ${fontFor[lang]}`}>
       <body className="min-h-screen">
-        <AnnouncementBar text={tr(settings.announcement, lang)} />
+        <AnnouncementBar text={settings.announcementEnabled ? tr(settings.announcement, lang) : ""} />
         <Header lang={lang} />
         <main>{children}</main>
         <Footer lang={lang} delivery={tr(settings.delivery, lang)} />

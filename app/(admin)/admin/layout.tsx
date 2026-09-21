@@ -23,11 +23,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
             <Link href="/admin" className="flex items-center gap-2.5">
               <FlowerLogo className="h-8 w-8" />
-              <span className="font-semibold text-rose-deep">Aarifa Flowers</span>
-              <span className="rounded-full bg-rose-soft px-2 py-0.5 text-xs font-semibold text-rose-deep">Admin</span>
+              <span className="whitespace-nowrap font-semibold text-rose-deep">Aarifa Flowers</span>
+              <span className="hidden rounded-full bg-rose-soft px-2 py-0.5 text-xs font-semibold text-rose-deep sm:inline">Admin</span>
             </Link>
             {loggedIn && (
-              <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-4 whitespace-nowrap text-sm">
                 <Link href="/en" target="_blank" className="font-medium text-muted hover:text-rose">
                   View website
                 </Link>

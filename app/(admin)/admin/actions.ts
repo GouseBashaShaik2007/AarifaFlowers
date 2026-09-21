@@ -14,7 +14,15 @@ import {
   type TypeId,
 } from "@/lib/catalog";
 import type { Review } from "@/lib/content";
-import { deleteReview, getReview, saveReview, saveSiteSettings } from "@/lib/siteContent";
+import { cleanHandle, MAX_REELS, normalizeReelUrl, type Reel } from "@/lib/instagram";
+import {
+  deleteReview,
+  getInstagramSettings,
+  getReview,
+  saveInstagramSettings,
+  saveReview,
+  saveSiteSettings,
+} from "@/lib/siteContent";
 import {
   deleteProduct,
   deleteProducts,
@@ -276,11 +284,17 @@ export async function markAllFreshAction(): Promise<ActionResult> {
 
 // ---------- announcements ----------
 
-export async function saveSettingsAction(input: { announcement: Text; delivery: Text; leadTime: Text }): Promise<ActionResult> {
+export async function saveSettingsAction(input: {
+  announcementEnabled: boolean;
+  announcement: Text;
+  delivery: Text;
+  leadTime: Text;
+}): Promise<ActionResult> {
   const denied = await guard();
   if (denied) return denied;
   try {
     await saveSiteSettings({
+      announcementEnabled: input.announcementEnabled !== false,
       announcement: cleanText(input.announcement, 220),
       delivery: cleanText(input.delivery, 500),
       leadTime: cleanText(input.leadTime, 320),
@@ -363,5 +377,47 @@ export async function setReviewPublishedAction(id: string, published: boolean): 
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Could not update." };
+  }
+}
+
+// ---------- Instagram reels ----------
+
+export async function saveInstagramAction(input: { enabled: boolean; handle: string; reels: Reel[] }): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  try {
+    const handle = cleanHandle(String(input.handle ?? ""));
+    if (!handle) {
+      return { ok: false, error: "Please enter your Instagram name, for example aarifashaik31. Use letters, numbers, dots and underscores only." };
+    }
+
+    const submitted = Array.isArray(input.reels) ? input.reels.slice(0, MAX_REELS) : [];
+    const reels: Reel[] = [];
+    for (let i = 0; i < submitted.length; i++) {
+      const raw = String(submitted[i]?.url ?? "").trim();
+      let url = "";
+      if (raw) {
+        const tidy = normalizeReelUrl(raw);
+        if (!tidy) {
+          return { ok: false, error: `Reel ${i + 1} does not look like an Instagram reel link. Open the reel on Instagram, tap Share, then Copy link.` };
+        }
+        url = tidy;
+      }
+      const poster = submitted[i]?.poster ? String(submitted[i].poster) : undefined;
+      if (poster && !goodPhotoAddress(poster)) {
+        return { ok: false, error: `The preview picture of reel ${i + 1} has an address that is not allowed. Remove it and add it again.` };
+      }
+      reels.push({ url, ...(poster ? { poster } : {}) });
+    }
+
+    const before = await getInstagramSettings();
+    await saveInstagramSettings({ enabled: Boolean(input.enabled), handle, reels });
+
+    // Delete preview pictures that are no longer used.
+    const kept = new Set(reels.map((r) => r.poster).filter(Boolean));
+    for (const old of before.reels) if (old.poster && !kept.has(old.poster)) await removeImage(old.poster);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not save." };
   }
 }

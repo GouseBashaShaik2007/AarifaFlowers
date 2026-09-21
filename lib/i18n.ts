@@ -56,6 +56,11 @@ export const en = {
   viewSets: "View all sets",
   filters: "Filters",
   starsLabel: "{n} out of 5 stars",
+  reelsTitle: "🌸 See Our Garlands in Action",
+  reelsSub: "Watch behind-the-scenes garland crafting and real customer setups from our workshop.",
+  reelsFollow: "Follow {handle} on Instagram",
+  reelsPlay: "Play reel",
+  reelsWatch: "Watch on Instagram",
 };
 
 type Dict = typeof en;
@@ -116,6 +121,11 @@ const hi: Dict = {
   viewSets: "सभी सेट देखें",
   filters: "फ़िल्टर",
   starsLabel: "5 में से {n} सितारे",
+  reelsTitle: "🌸 हमारी मालाएँ वीडियो में देखें",
+  reelsSub: "हमारी वर्कशॉप में माला बनने के पर्दे के पीछे के पल और असली ग्राहकों की सजावट देखें।",
+  reelsFollow: "Instagram पर {handle} को फ़ॉलो करें",
+  reelsPlay: "रील चलाएँ",
+  reelsWatch: "Instagram पर देखें",
 };
 
 const te: Dict = {
@@ -174,6 +184,11 @@ const te: Dict = {
   viewSets: "అన్ని సెట్లు చూడండి",
   filters: "ఫిల్టర్లు",
   starsLabel: "5 లో {n} నక్షత్రాలు",
+  reelsTitle: "🌸 మా హారాలను వీడియోలో చూడండి",
+  reelsSub: "మా వర్క్‌షాప్‌లో హారాలు తయారయ్యే తెర వెనుక దృశ్యాలు, నిజమైన కస్టమర్ల అలంకరణలు చూడండి.",
+  reelsFollow: "Instagram లో {handle} ను ఫాలో అవ్వండి",
+  reelsPlay: "రీల్ ప్లే చేయండి",
+  reelsWatch: "Instagram లో చూడండి",
 };
 
 const ur: Dict = {
@@ -232,6 +247,11 @@ const ur: Dict = {
   viewSets: "تمام سیٹ دیکھیں",
   filters: "فلٹر",
   starsLabel: "5 میں سے {n} ستارے",
+  reelsTitle: "🌸 ہمارے ہار ویڈیو میں دیکھیں",
+  reelsSub: "ہماری ورکشاپ میں ہار بننے کے پردے کے پیچھے کے مناظر اور حقیقی گاہکوں کی سجاوٹ دیکھیں۔",
+  reelsFollow: "انسٹاگرام پر {handle} کو فالو کریں",
+  reelsPlay: "ریل چلائیں",
+  reelsWatch: "انسٹاگرام پر دیکھیں",
 };
 
 export const dictionaries: Record<Lang, Dict> = { en, hi, te, ur };

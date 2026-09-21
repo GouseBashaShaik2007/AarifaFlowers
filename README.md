@@ -80,12 +80,25 @@ To try the site the way Cloudflare runs it, copy `.env.local` to `.dev.vars` and
 
 ## Announcements, customer stories and sets
 
-- **Announcements** (admin, Announcements tab): three texts you can change yourself in all four languages. The **announcement bar** is the thin bar at the top of every page. **Delivery rules** show in the footer and on each garland page. **Order notice** shows in How it works and on each garland page. Change them before a festival or a busy wedding month. Until you save your own, the site uses suggested wording that does not name a city, so add your city name. Leave every language of the announcement empty to hide the bar.
+- **Announcements** (admin, Announcements tab): three texts you can change yourself in all four languages. The **announcement bar** is the thin bar at the top of every page. **Delivery rules** show in the footer and on each garland page. **Order notice** shows in How it works and on each garland page. Change them before a festival or a busy wedding month. Until you save your own, the site uses suggested wording that does not name a city, so add your city name. Use the **Show the announcement bar** switch to hide the bar without losing your text. It is on by default. Leaving every language empty also hides the bar.
 - **Customer stories** (admin, Customer stories tab): add a real customer, an optional event, what they said, a rating from 1 to 5 stars and an optional photo. Use the first name and the area, and only what the customer agreed to share. The Customer stories section on the home page stays hidden until you add and show your first story.
 - **Sets:** the **Set / Combo** type is in the garland form. A set is an ordinary garland with a price range, and the home page shows a Sets and combos row for every garland of that type. The three sample sets use placeholder prices. Edit or delete them.
 - **Floating chat button:** on the home page it appears after you scroll past the top. On garland pages it is hidden because they have their own order bar.
 - **Filter bar:** on the garlands page the occasion buttons stay under the header while you scroll. The other filters open under the Filters button.
 - **Supabase:** announcements and stories use a new `settings` table. If you set up Supabase earlier, run `supabase.sql` again. It is safe to repeat. Until you do, the site keeps using the suggested texts and saving an announcement shows an error that says so.
+
+## Instagram reels
+
+The home page has a **See Our Garlands in Action** section above the custom design banner. It shows your reels as a swipe carousel on phones and three columns on larger screens. The title, subtitle and button are translated into all four languages.
+
+Manage it in the admin page, **Instagram** tab:
+
+- **Show on the website** switch: turns the whole section on or off.
+- **Instagram name:** used by the Follow button. Change it if the account changes.
+- **Reels:** paste the link of each reel. On Instagram open the reel, tap Share, then Copy link. You can add up to 6, move them up or down, and remove them. A reel with an empty link shows a card that opens your Instagram page. The section stays hidden while there are no reels.
+- **Preview picture (optional):** a screenshot shown on the card before someone taps play. Without one, the card shows a soft flower design.
+
+Each reel starts as a light preview card. Instagram's own player loads only after someone taps play, which keeps the home page fast and stops Instagram from setting cookies until a visitor chooses to watch. Until you save anything in the Instagram tab, the site shows three starter cards that open your Instagram page.
 
 ## AI suggestions for name and description
 

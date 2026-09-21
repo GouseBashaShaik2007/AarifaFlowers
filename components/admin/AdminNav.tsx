@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/admin", label: "Garlands", match: (p: string) => p === "/admin" || p.startsWith("/admin/products") },
   { href: "/admin/reviews", label: "Customer stories", match: (p: string) => p.startsWith("/admin/reviews") },
   { href: "/admin/settings", label: "Announcements", match: (p: string) => p.startsWith("/admin/settings") },
+  { href: "/admin/instagram", label: "Instagram", match: (p: string) => p.startsWith("/admin/instagram") },
 ];
 
 /** Switches between the parts of the admin panel. Scrolls sideways on a small phone. */

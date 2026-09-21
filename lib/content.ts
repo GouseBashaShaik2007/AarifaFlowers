@@ -4,6 +4,8 @@ import type { Text } from "./catalog";
 
 /** Texts the owner can change from the admin page, in every site language. */
 export type SiteSettings = {
+  /** Whether the bar shows at all. On by default. Switching it off keeps the text for later. */
+  announcementEnabled: boolean;
   /** The thin bar at the top of every page. Leave empty to hide the bar. */
   announcement: Text;
   /** Delivery rules. Shown in the footer and on each garland page. */
@@ -17,6 +19,7 @@ export type SiteSettings = {
  * It says nothing about a city on purpose. The owner adds the city in the admin page.
  */
 export const DEFAULT_SETTINGS: SiteSettings = {
+  announcementEnabled: true,
   announcement: {
     en: "🚚 Fresh local delivery • Order 2 days ahead for weddings and 24 hours ahead for pooja garlands",
     hi: "🚚 स्थानीय क्षेत्र में ताज़ा डिलीवरी • शादी के लिए 2 दिन पहले और पूजा की मालाओं के लिए 24 घंटे पहले ऑर्डर करें",

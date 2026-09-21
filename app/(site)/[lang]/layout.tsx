@@ -12,7 +12,7 @@ import { generalMessage, waLink } from "@/lib/whatsapp";
 // Products change from the admin panel, so pages are built on every request.
 export const dynamic = "force-dynamic";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aarifaflowers.store";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;

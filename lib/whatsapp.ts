@@ -9,7 +9,8 @@ export const WHATSAPP_DISPLAY =
     : `+${WHATSAPP_NUMBER}`;
 export const BUSINESS_NAME = "Aarifa Flowers";
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
+// The live address. It is baked in at build time, so a default here keeps the link in every order message correct.
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://aarifaflowers.store").replace(/\/$/, "");
 
 export function formatPrice(n: number): string {
   return "₹" + Math.round(n).toLocaleString("en-IN");

@@ -102,14 +102,14 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
                   href={`/${lang}/garlands?occasion=${o.id}`}
                   className={`group flex h-full flex-col items-center gap-3 rounded-3xl border border-line p-4 text-center transition hover:-translate-y-0.5 hover:shadow-lg ${OCCASION_BG[o.id]}`}
                 >
-                  <span className="grid h-24 w-24 place-items-center rounded-full bg-white/70 sm:h-28 sm:w-28">
+                  <span className="relative grid h-24 w-24 place-items-center overflow-hidden rounded-full bg-white/70 sm:h-28 sm:w-28">
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={img.src}
                         alt={img.alt}
                         loading="lazy"
-                        className="h-full w-full object-contain p-2 transition group-hover:scale-105"
+                        className="absolute inset-0 h-full w-full object-contain p-2 transition group-hover:scale-105"
                       />
                     ) : (
                       <span className="text-4xl">{o.emoji}</span>

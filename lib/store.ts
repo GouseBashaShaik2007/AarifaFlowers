@@ -152,6 +152,53 @@ export async function loadSampleProducts(): Promise<void> {
   }
 }
 
+// ---------- documents: announcements and reviews ----------
+// A tiny key-value store for content that is not a garland. Supabase uses the "settings" table.
+
+const CONTENT_FILE = path.join(DATA_DIR, "content.json");
+
+async function readContentFile(): Promise<Record<string, unknown>> {
+  try {
+    return JSON.parse(await fs.readFile(CONTENT_FILE, "utf8")) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
+/** Returns null when nothing is saved yet, or when it cannot be read. The site then falls back to its defaults. */
+export async function readDoc<T>(key: string): Promise<T | null> {
+  if (usingSupabase) {
+    const { data, error } = await supabase().from("settings").select("data").eq("key", key).maybeSingle();
+    if (error) {
+      console.error(`Could not read "${key}": ${error.message}`);
+      return null;
+    }
+    return (data?.data as T) ?? null;
+  }
+  return ((await readContentFile())[key] as T) ?? null;
+}
+
+export async function writeDoc(key: string, value: unknown): Promise<void> {
+  assertWritable();
+  if (usingSupabase) {
+    const { error } = await supabase()
+      .from("settings")
+      .upsert({ key, data: value, updated_at: new Date().toISOString() });
+    if (error) {
+      throw new Error(
+        `Could not save. In Supabase, run supabase.sql again so the settings table exists. Details: ${error.message}`,
+      );
+    }
+    return;
+  }
+  const docs = await readContentFile();
+  docs[key] = value;
+  await fs.mkdir(DATA_DIR, { recursive: true });
+  const tmp = CONTENT_FILE + ".tmp";
+  await fs.writeFile(tmp, JSON.stringify(docs, null, 2), "utf8");
+  await fs.rename(tmp, CONTENT_FILE);
+}
+
 // ---------- WhatsApp tap counts ----------
 // One counter per garland per day (India time). No visitor information is stored.
 

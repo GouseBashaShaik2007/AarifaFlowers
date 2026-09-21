@@ -4,9 +4,11 @@ import "../../globals.css";
 import Footer from "@/components/Footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import Header from "@/components/Header";
-import { LANGS, isLang, isRtl } from "@/lib/catalog";
+import AnnouncementBar from "@/components/AnnouncementBar";
+import { LANGS, isLang, isRtl, tr } from "@/lib/catalog";
 import { deva, playfair, poppins, telugu, urdu } from "@/lib/fonts";
 import { getDict } from "@/lib/i18n";
+import { getSiteSettings } from "@/lib/siteContent";
 import { generalMessage, waLink } from "@/lib/whatsapp";
 
 // Products change from the admin panel, so pages are built on every request.
@@ -46,13 +48,15 @@ export default async function LangLayout({
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   const t = getDict(lang);
+  const settings = await getSiteSettings();
 
   return (
     <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"} className={`${playfair.variable} ${fontFor[lang]}`}>
       <body className="min-h-screen">
+        <AnnouncementBar text={tr(settings.announcement, lang)} />
         <Header lang={lang} />
         <main>{children}</main>
-        <Footer lang={lang} />
+        <Footer lang={lang} delivery={tr(settings.delivery, lang)} />
         <FloatingWhatsApp href={waLink(generalMessage)} label={t.chat} />
       </body>
     </html>

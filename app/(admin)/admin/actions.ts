@@ -13,6 +13,8 @@ import {
   type Text,
   type TypeId,
 } from "@/lib/catalog";
+import type { Review } from "@/lib/content";
+import { deleteReview, getReview, saveReview, saveSiteSettings } from "@/lib/siteContent";
 import {
   deleteProduct,
   deleteProducts,
@@ -23,6 +25,15 @@ import {
   saveProduct,
   saveProducts,
 } from "@/lib/store";
+
+/** A photo address we accept: one of ours, an https address, or a local test address. */
+function goodPhotoAddress(u: unknown): boolean {
+  return (
+    typeof u === "string" &&
+    u.length < 600 &&
+    (u.startsWith("/") || u.startsWith("https://") || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(u))
+  );
+}
 
 export type ActionResult = { ok: true; id?: string; count?: number; ids?: string[] } | { ok: false; error: string };
 
@@ -112,10 +123,7 @@ export async function saveProductAction(input: ProductInput): Promise<ActionResu
     }
 
     // A photo address that is not accepted must be reported, never dropped without a word.
-    const goodAddress = (u: unknown) =>
-      typeof u === "string" &&
-      u.length < 600 &&
-      (u.startsWith("/") || u.startsWith("https://") || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(u));
+    const goodAddress = goodPhotoAddress;
     const submitted = input.images ?? [];
     if (!submitted.every(goodAddress)) {
       return {
@@ -261,6 +269,98 @@ export async function markAllFreshAction(): Promise<ActionResult> {
     const off = (await listProducts()).filter((p) => !p.available);
     await saveProducts(off.map((p) => ({ ...p, available: true, updatedAt: now })));
     return { ok: true, count: off.length, ids: off.map((p) => p.id) };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not update." };
+  }
+}
+
+// ---------- announcements ----------
+
+export async function saveSettingsAction(input: { announcement: Text; delivery: Text; leadTime: Text }): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  try {
+    await saveSiteSettings({
+      announcement: cleanText(input.announcement, 220),
+      delivery: cleanText(input.delivery, 500),
+      leadTime: cleanText(input.leadTime, 320),
+    });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not save." };
+  }
+}
+
+// ---------- customer stories ----------
+
+export type ReviewInput = {
+  id?: string;
+  name: string;
+  event: string;
+  text: string;
+  rating: number;
+  photo?: string | null;
+  published: boolean;
+};
+
+export async function saveReviewAction(input: ReviewInput): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  try {
+    const name = String(input.name ?? "").trim().slice(0, 80);
+    const text = String(input.text ?? "").trim().slice(0, 600);
+    const event = String(input.event ?? "").trim().slice(0, 80);
+    const rating = Math.round(Number(input.rating));
+    if (!name) return { ok: false, error: "Please enter the customer name." };
+    if (!text) return { ok: false, error: "Please enter what the customer said." };
+    if (!Number.isFinite(rating) || rating < 1 || rating > 5) return { ok: false, error: "Please choose 1 to 5 stars." };
+    const photo = input.photo ? String(input.photo) : undefined;
+    if (photo && !goodPhotoAddress(photo)) {
+      return { ok: false, error: "The photo address is not allowed, so nothing was saved. Remove the photo and add it again." };
+    }
+
+    const existing = input.id ? await getReview(input.id) : null;
+    const now = new Date().toISOString();
+    const review: Review = {
+      id: existing?.id ?? slugify(name),
+      name,
+      event,
+      text,
+      rating,
+      ...(photo ? { photo } : {}),
+      published: Boolean(input.published),
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+    };
+    await saveReview(review);
+    if (existing?.photo && existing.photo !== photo) await removeImage(existing.photo);
+    return { ok: true, id: review.id };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not save." };
+  }
+}
+
+export async function deleteReviewAction(id: string): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  try {
+    const existing = await getReview(id);
+    await deleteReview(id);
+    if (existing?.photo) await removeImage(existing.photo);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not delete." };
+  }
+}
+
+export async function setReviewPublishedAction(id: string, published: boolean): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  try {
+    const existing = await getReview(id);
+    if (!existing) return { ok: false, error: "Story not found." };
+    await saveReview({ ...existing, published, updatedAt: new Date().toISOString() });
+    return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Could not update." };
   }

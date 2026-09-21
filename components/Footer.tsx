@@ -4,7 +4,7 @@ import { getDict } from "@/lib/i18n";
 import { BUSINESS_NAME, WHATSAPP_DISPLAY, WHATSAPP_NUMBER, generalMessage, waLink } from "@/lib/whatsapp";
 import { FlowerLogo, WhatsAppIcon } from "./icons";
 
-export default function Footer({ lang }: { lang: Lang }) {
+export default function Footer({ lang, delivery }: { lang: Lang; delivery: string }) {
   const t = getDict(lang);
   return (
     <footer className="mt-20 border-t border-line bg-cream-deep/60">
@@ -44,9 +44,12 @@ export default function Footer({ lang }: { lang: Lang }) {
             <WhatsAppIcon />
             <bdi>{WHATSAPP_DISPLAY}</bdi>
           </a>
-          <p className="mt-2 text-sm text-muted">
-            {t.delivery}: {t.anyLocation}
-          </p>
+          {delivery && (
+            <p className="mt-3 text-sm text-muted">
+              <span className="font-semibold text-ink">{t.delivery}: </span>
+              {delivery}
+            </p>
+          )}
           <span className="sr-only">{WHATSAPP_NUMBER}</span>
         </div>
       </div>

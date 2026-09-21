@@ -9,6 +9,7 @@ import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { FLOWERS, OCCASIONS, TYPES, isLang, label, tr } from "@/lib/catalog";
 import { getDict } from "@/lib/i18n";
+import { getSiteSettings } from "@/lib/siteContent";
 import { getProduct, listProducts } from "@/lib/store";
 import { productMessage, waLink } from "@/lib/whatsapp";
 
@@ -36,6 +37,9 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
   const name = tr(product.name, lang);
   const description = tr(product.description, lang);
   const orderHref = waLink(productMessage(product));
+  const settings = await getSiteSettings();
+  const delivery = tr(settings.delivery, lang);
+  const leadTime = tr(settings.leadTime, lang);
 
   const others = (await listProducts()).filter((p) => p.id !== product.id);
   const related = [
@@ -102,10 +106,13 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
               </div>
             )}
 
-            <div className="mt-6 rounded-2xl bg-cream-deep/70 p-4 text-sm">
-              <p className="font-semibold text-ink">🚚 {t.delivery}</p>
-              <p className="mt-1 text-muted">{t.deliveryNote}</p>
-            </div>
+            {(delivery || leadTime) && (
+              <div className="mt-6 rounded-2xl bg-cream-deep/70 p-4 text-sm">
+                <p className="font-semibold text-ink">🚚 {t.delivery}</p>
+                {delivery && <p className="mt-1 text-muted">{delivery}</p>}
+                {leadTime && <p className="mt-2 font-medium text-ink">⏱️ {leadTime}</p>}
+              </div>
+            )}
 
             <div className="mt-6 hidden md:block">
               <WhatsAppButton href={orderHref} size="lg" full track={product.id}>

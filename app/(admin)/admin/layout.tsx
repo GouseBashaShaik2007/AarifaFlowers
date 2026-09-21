@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "../../globals.css";
+import AdminNav from "@/components/admin/AdminNav";
 import { FlowerLogo } from "@/components/icons";
 import { isAdmin } from "@/lib/auth";
 import { poppins } from "@/lib/fonts";
@@ -39,6 +40,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             )}
           </div>
         </header>
+        {loggedIn && <AdminNav />}
         <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
       </body>
     </html>

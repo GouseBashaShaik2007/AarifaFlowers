@@ -80,16 +80,22 @@ export default function ImageUploader({
   images,
   onChange,
   onWaitingChange,
+  maxPhotos = MAX_PHOTOS,
+  autoRemoveDefault = true,
   ref,
 }: {
   images: string[];
   onChange: (next: string[]) => void;
+  /** How many photos may be added. Use 1 for a single photo. */
+  maxPhotos?: number;
+  /** Whether Remove background starts switched on. Turn it off for real customer photos. */
+  autoRemoveDefault?: boolean;
   ref?: Ref<UploaderHandle>;
   /** Reports how many photos are still waiting for review, so the form can warn before saving. */
   onWaitingChange?: (count: number) => void;
 }) {
   const [items, setItems] = useState<Item[]>([]);
-  const [autoRemove, setAutoRemove] = useState(true);
+  const [autoRemove, setAutoRemove] = useState(autoRemoveDefault);
   const [message, setMessage] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const itemsRef = useRef<Item[]>([]);
@@ -189,9 +195,9 @@ export default function ImageUploader({
   const onFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setMessage("");
-    const room = MAX_PHOTOS - imagesRef.current.length - itemsRef.current.length;
+    const room = maxPhotos - imagesRef.current.length - itemsRef.current.length;
     const chosen = Array.from(files).slice(0, Math.max(0, room));
-    if (files.length > chosen.length) setMessage(`You can add up to ${MAX_PHOTOS} photos per garland.`);
+    if (files.length > chosen.length) setMessage(`You can add up to ${maxPhotos} photo${maxPhotos === 1 ? "" : "s"} here.`);
     if (inputRef.current) inputRef.current.value = "";
 
     const fresh: Item[] = chosen.map((f) => ({
@@ -266,7 +272,7 @@ export default function ImageUploader({
   };
 
   const readyCount = items.filter((x) => x.status === "ready").length;
-  const full = images.length + items.length >= MAX_PHOTOS;
+  const full = images.length + items.length >= maxPhotos;
 
   return (
     <div className="space-y-4">
@@ -442,12 +448,12 @@ export default function ImageUploader({
           }`}
         >
           <span aria-hidden="true">📷</span>
-          Choose photos
+          {maxPhotos > 1 ? "Choose photos" : "Choose a photo"}
           <input
             ref={inputRef}
             type="file"
             accept="image/*"
-            multiple
+            multiple={maxPhotos > 1}
             className="sr-only"
             disabled={full}
             onChange={(e) => onFiles(e.target.files)}

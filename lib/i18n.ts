@@ -36,7 +36,6 @@ export const en = {
   flowersUsed: "Flowers used",
   bestFor: "Best for",
   delivery: "Delivery",
-  deliveryNote: "Delivery available at any location. We confirm the details on WhatsApp.",
   similar: "You may also like",
   priceNote: "This is the starting price. The final price depends on size and design.",
   rangeNote: "This is the usual price range. The final price depends on size and design.",
@@ -51,8 +50,12 @@ export const en = {
   home: "Go to home",
   handmade: "Handmade",
   fresh: "Fresh",
-  anyLocation: "Any location",
   photoOf: "Photo {n} of {name}",
+  customerStories: "Customer stories",
+  setsTitle: "Sets & combos",
+  viewSets: "View all sets",
+  filters: "Filters",
+  starsLabel: "{n} out of 5 stars",
 };
 
 type Dict = typeof en;
@@ -93,7 +96,6 @@ const hi: Dict = {
   flowersUsed: "इस्तेमाल किए गए फूल",
   bestFor: "इनके लिए उत्तम",
   delivery: "डिलीवरी",
-  deliveryNote: "किसी भी स्थान पर डिलीवरी। विवरण WhatsApp पर तय होगा।",
   similar: "ये भी पसंद आ सकती हैं",
   priceNote: "यह शुरुआती कीमत है। अंतिम कीमत साइज़ और डिज़ाइन पर निर्भर करती है।",
   rangeNote: "यह सामान्य कीमत सीमा है। अंतिम कीमत साइज़ और डिज़ाइन पर निर्भर करती है।",
@@ -108,8 +110,12 @@ const hi: Dict = {
   home: "होम पर जाएँ",
   handmade: "हस्तनिर्मित",
   fresh: "ताज़ा",
-  anyLocation: "कोई भी स्थान",
   photoOf: "{name} की फोटो {n}",
+  customerStories: "ग्राहकों की कहानियाँ",
+  setsTitle: "सेट और कॉम्बो",
+  viewSets: "सभी सेट देखें",
+  filters: "फ़िल्टर",
+  starsLabel: "5 में से {n} सितारे",
 };
 
 const te: Dict = {
@@ -148,7 +154,6 @@ const te: Dict = {
   flowersUsed: "ఉపయోగించిన పువ్వులు",
   bestFor: "వీటికి అనువైనది",
   delivery: "డెలివరీ",
-  deliveryNote: "ఏ ప్రాంతానికైనా డెలివరీ. వివరాలు WhatsApp లో నిర్ధారిస్తాము.",
   similar: "ఇవి కూడా నచ్చవచ్చు",
   priceNote: "ఇది ప్రారంభ ధర. తుది ధర పరిమాణం, డిజైన్ పై ఆధారపడి ఉంటుంది.",
   rangeNote: "ఇది సాధారణ ధర పరిధి. తుది ధర పరిమాణం, డిజైన్ పై ఆధారపడి ఉంటుంది.",
@@ -163,8 +168,12 @@ const te: Dict = {
   home: "హోమ్‌కు వెళ్లండి",
   handmade: "చేతితో చేసినది",
   fresh: "తాజా",
-  anyLocation: "ఏ ప్రాంతమైనా",
   photoOf: "{name} ఫోటో {n}",
+  customerStories: "మా కస్టమర్ల అనుభవాలు",
+  setsTitle: "సెట్లు & కాంబోలు",
+  viewSets: "అన్ని సెట్లు చూడండి",
+  filters: "ఫిల్టర్లు",
+  starsLabel: "5 లో {n} నక్షత్రాలు",
 };
 
 const ur: Dict = {
@@ -203,7 +212,6 @@ const ur: Dict = {
   flowersUsed: "استعمال شدہ پھول",
   bestFor: "ان کے لیے موزوں",
   delivery: "ڈیلیوری",
-  deliveryNote: "کسی بھی جگہ ڈیلیوری۔ تفصیلات واٹس ایپ پر طے ہوں گی۔",
   similar: "یہ بھی پسند آ سکتے ہیں",
   priceNote: "یہ ابتدائی قیمت ہے۔ حتمی قیمت سائز اور ڈیزائن پر منحصر ہے۔",
   rangeNote: "یہ عام قیمت کی حد ہے۔ حتمی قیمت سائز اور ڈیزائن پر منحصر ہے۔",
@@ -218,8 +226,12 @@ const ur: Dict = {
   home: "ہوم پر جائیں",
   handmade: "ہاتھ سے بنا",
   fresh: "تازہ",
-  anyLocation: "کوئی بھی جگہ",
   photoOf: "{name} کی تصویر {n}",
+  customerStories: "ہمارے گاہکوں کی کہانیاں",
+  setsTitle: "سیٹ اور کومبو",
+  viewSets: "تمام سیٹ دیکھیں",
+  filters: "فلٹر",
+  starsLabel: "5 میں سے {n} ستارے",
 };
 
 export const dictionaries: Record<Lang, Dict> = { en, hi, te, ur };

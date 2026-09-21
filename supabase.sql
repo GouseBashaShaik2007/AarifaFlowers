@@ -38,3 +38,12 @@ $$;
 -- Only the server (service role key) may count taps. Visitors cannot call this directly.
 revoke execute on function public.increment_tap(text, date) from public, anon, authenticated;
 grant execute on function public.increment_tap(text, date) to service_role;
+
+-- Shop announcements and customer stories. One row per kind of content.
+create table if not exists public.settings (
+  key text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.settings enable row level security;

@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowIcon } from "@/components/icons";
+import CustomerStories from "@/components/CustomerStories";
 import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { OCCASIONS, isLang, thumbOf, tr } from "@/lib/catalog";
 import { getDict } from "@/lib/i18n";
+import { getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
 import { listProducts } from "@/lib/store";
 import { customMessage, generalMessage, waLink } from "@/lib/whatsapp";
 
@@ -23,6 +25,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 
   const products = await listProducts();
   const featured = products.filter((p) => p.featured).slice(0, 8);
+  const sets = products.filter((p) => p.types.includes("set")).slice(0, 4);
+  const reviews = (await getPublishedReviews()).slice(0, 6);
+  const leadTime = tr((await getSiteSettings()).leadTime, lang);
   const heroPics = (featured.length ? featured : products).filter((p) => p.images[0]).slice(0, 3);
 
   const occasionImage = (id: string) => {
@@ -146,6 +151,32 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         </section>
       )}
 
+      {/* Sets and combos */}
+      {sets.length > 0 && (
+        <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6">
+          <div className="flex items-end justify-between gap-4">
+            <h2 className="h-display text-3xl font-semibold text-ink sm:text-4xl">🎁 {t.setsTitle}</h2>
+            <Link
+              href={`/${lang}/garlands?type=set`}
+              className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-rose hover:text-rose-deep"
+            >
+              {t.viewSets}
+              <ArrowIcon />
+            </Link>
+          </div>
+          <ul className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+            {sets.map((p) => (
+              <li key={p.id}>
+                <ProductCard product={p} lang={lang} t={t} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Customer stories. Shown only when at least one is published. */}
+      <CustomerStories reviews={reviews} t={t} />
+
       {/* How it works */}
       <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6">
         <h2 className="h-display text-3xl font-semibold text-ink sm:text-4xl">{t.howItWorks}</h2>
@@ -166,6 +197,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             </li>
           ))}
         </ol>
+        {leadTime && (
+          <p className="mt-4 rounded-2xl bg-marigold-soft px-4 py-3 text-sm font-medium text-ink">⏱️ {leadTime}</p>
+        )}
       </section>
 
       {/* Custom design */}

@@ -78,6 +78,15 @@ To try the site the way Cloudflare runs it, copy `.env.local` to `.dev.vars` and
 - **Price range:** fill in a highest price to show "₹1,499 – ₹2,499". Leave it empty to show "From ₹1,499".
 - **WhatsApp taps:** each time a customer presses an Order on WhatsApp button, one is added to that garland's count. The top five of the last 30 days show above the list. Only the garland and the day are saved. Nothing about the customer is saved. Your own taps while logged in are not counted. If you set up Supabase before this feature existed, run `supabase.sql` again. It is safe to repeat.
 
+## Announcements, customer stories and sets
+
+- **Announcements** (admin, Announcements tab): three texts you can change yourself in all four languages. The **announcement bar** is the thin bar at the top of every page. **Delivery rules** show in the footer and on each garland page. **Order notice** shows in How it works and on each garland page. Change them before a festival or a busy wedding month. Until you save your own, the site uses suggested wording that does not name a city, so add your city name. Leave every language of the announcement empty to hide the bar.
+- **Customer stories** (admin, Customer stories tab): add a real customer, an optional event, what they said, a rating from 1 to 5 stars and an optional photo. Use the first name and the area, and only what the customer agreed to share. The Customer stories section on the home page stays hidden until you add and show your first story.
+- **Sets:** the **Set / Combo** type is in the garland form. A set is an ordinary garland with a price range, and the home page shows a Sets and combos row for every garland of that type. The three sample sets use placeholder prices. Edit or delete them.
+- **Floating chat button:** on the home page it appears after you scroll past the top. On garland pages it is hidden because they have their own order bar.
+- **Filter bar:** on the garlands page the occasion buttons stay under the header while you scroll. The other filters open under the Filters button.
+- **Supabase:** announcements and stories use a new `settings` table. If you set up Supabase earlier, run `supabase.sql` again. It is safe to repeat. Until you do, the site keeps using the suggested texts and saving an announcement shows an error that says so.
+
 ## AI suggestions for name and description
 
 In the admin page, after you add photos, the **Suggest name and description with AI** button reads your photos and writes a name and a short description in English, Hindi, Telugu and Urdu. You see the text first and press **Use this text** only if you like it.

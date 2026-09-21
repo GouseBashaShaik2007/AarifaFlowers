@@ -10,7 +10,7 @@ export default function Header({ lang }: { lang: Lang }) {
   const t = getDict(lang);
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-cream/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href={`/${lang}`} className="flex items-center gap-2.5" aria-label={BUSINESS_NAME}>
           <FlowerLogo className="h-9 w-9" />
           <span className="font-display text-xl font-semibold leading-none text-rose-deep" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>

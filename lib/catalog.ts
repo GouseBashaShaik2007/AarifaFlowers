@@ -91,6 +91,11 @@ export const TYPES = [
     label: { en: "Car Decoration", hi: "कार सजावट", te: "కారు అలంకరణ", ur: "کار کی سجاوٹ" },
   },
   {
+    id: "set",
+    emoji: "🎁",
+    label: { en: "Set / Combo", hi: "सेट / कॉम्बो", te: "సెట్ / కాంబో", ur: "سیٹ / کومبو" },
+  },
+  {
     id: "stage",
     emoji: "🎭",
     label: {

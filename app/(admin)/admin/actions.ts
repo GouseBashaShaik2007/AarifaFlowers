@@ -111,9 +111,19 @@ export async function saveProductAction(input: ProductInput): Promise<ActionResu
       }
     }
 
-    const images = (input.images ?? [])
-      .filter((u) => typeof u === "string" && u.length < 600 && (u.startsWith("/") || u.startsWith("https://")))
-      .slice(0, 10);
+    // A photo address that is not accepted must be reported, never dropped without a word.
+    const goodAddress = (u: unknown) =>
+      typeof u === "string" &&
+      u.length < 600 &&
+      (u.startsWith("/") || u.startsWith("https://") || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(u));
+    const submitted = input.images ?? [];
+    if (!submitted.every(goodAddress)) {
+      return {
+        ok: false,
+        error: "One of the photos has an address that is not allowed, so nothing was saved. Remove that photo and add it again.",
+      };
+    }
+    const images = submitted.slice(0, 10);
 
     const existing = input.id ? await getProduct(input.id) : null;
     const now = new Date().toISOString();

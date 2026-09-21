@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { deleteProductAction, saveProductAction } from "@/app/(admin)/admin/actions";
 import {
   FLOWERS,
@@ -15,7 +15,7 @@ import {
   type Text,
 } from "@/lib/catalog";
 import AiSuggest from "./AiSuggest";
-import ImageUploader from "./ImageUploader";
+import ImageUploader, { type UploaderHandle } from "./ImageUploader";
 
 type Option = { id: string; label: Record<Lang, string>; emoji: string };
 
@@ -102,6 +102,8 @@ export default function ProductForm({ product, aiEnabled }: { product?: Product;
   const [pending, start] = useTransition();
   const [error, setError] = useState("");
   const [waiting, setWaiting] = useState(0);
+  const [stage, setStage] = useState("");
+  const uploader = useRef<UploaderHandle>(null);
 
   const [name, setName] = useState<Text>(product?.name ?? {});
   const [description, setDescription] = useState<Text>(product?.description ?? {});
@@ -135,10 +137,20 @@ export default function ProductForm({ product, aiEnabled }: { product?: Product;
       setError("The highest price must be more than the starting price. Leave it empty if there is no range.");
       return;
     }
-    if (waiting > 0 && !window.confirm(`${waiting} new photo(s) have not been added yet and will be lost. Save anyway?`)) {
-      return;
-    }
     start(async () => {
+      // Photos you chose but did not press "Add this photo" for are added now, so they are never lost.
+      let finalImages = images;
+      if (waiting > 0) {
+        setStage("Adding your photos…");
+        try {
+          finalImages = (await uploader.current?.flush()) ?? images;
+        } catch (err) {
+          setStage("");
+          setError(err instanceof Error ? err.message : "A photo could not be uploaded. Nothing was saved.");
+          return;
+        }
+      }
+      setStage("Saving…");
       const res = await saveProductAction({
         id: product?.id,
         name,
@@ -148,10 +160,11 @@ export default function ProductForm({ product, aiEnabled }: { product?: Product;
         occasions,
         types,
         flowers,
-        images,
+        images: finalImages,
         available,
         featured,
       });
+      setStage("");
       if (!res.ok) {
         setError(res.error);
         return;
@@ -194,7 +207,7 @@ export default function ProductForm({ product, aiEnabled }: { product?: Product;
         title="Photos"
         hint="Add clear photos. The background is removed automatically, and you can compare before and after."
       >
-        <ImageUploader images={images} onChange={setImages} onWaitingChange={setWaiting} />
+        <ImageUploader ref={uploader} images={images} onChange={setImages} onWaitingChange={setWaiting} />
       </Card>
 
       <Card title="Name and description" hint="English is required. Other languages are optional. If empty, the English text is shown.">
@@ -375,7 +388,7 @@ export default function ProductForm({ product, aiEnabled }: { product?: Product;
             disabled={pending}
             className="rounded-full bg-rose px-7 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_-8px_rgba(184,50,90,0.8)] transition hover:bg-rose-deep disabled:opacity-60"
           >
-            {pending ? "Saving…" : "Save garland"}
+            {pending ? stage || "Saving…" : "Save garland"}
           </button>
         </div>
       </div>

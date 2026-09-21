@@ -1,10 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 import { thumbOf } from "@/lib/catalog";
 import { prepareForUpload } from "@/lib/clientImages";
 
 const MAX_PHOTOS = 10;
+
+/** What the form can ask the uploader to do. */
+export type UploaderHandle = {
+  /**
+   * Waits for photos that are still being prepared, uploads every photo that has not been added yet,
+   * and returns the full list of photo addresses. Throws with a readable message if an upload fails.
+   */
+  flush: () => Promise<string[]>;
+};
 const MAX_SIDE = 1600;
 
 type Item = {
@@ -53,19 +62,29 @@ async function uploadBlob(blob: Blob, name: string): Promise<string> {
   try {
     data = await res.json();
   } catch {
-    // Not JSON. Fall through to the generic error below.
+    // Not JSON, for example an error page from the host. The status code below still tells us what happened.
   }
-  if (!res.ok || !data.url) throw new Error(data.error || "Upload failed. Please try again.");
+  if (!res.ok || !data.url) {
+    const why = res.status === 401 ? "Please log in again." : `Upload failed (error ${res.status}). Please try again.`;
+    console.error("Photo upload failed", res.status, data);
+    throw new Error(data.error || why);
+  }
   return data.url;
+}
+
+function fileNameFor(name: string, blob: Blob): string {
+  return name.replace(/\.[^.]+$/, "") + (blob.type === "image/jpeg" ? ".jpg" : ".webp");
 }
 
 export default function ImageUploader({
   images,
   onChange,
   onWaitingChange,
+  ref,
 }: {
   images: string[];
   onChange: (next: string[]) => void;
+  ref?: Ref<UploaderHandle>;
   /** Reports how many photos are still waiting for review, so the form can warn before saving. */
   onWaitingChange?: (count: number) => void;
 }) {
@@ -197,7 +216,7 @@ export default function ImageUploader({
     if (!blob) return;
     patch(key, { status: "uploading", error: undefined });
     try {
-      const url = await uploadBlob(blob, it.name.replace(/\.[^.]+$/, "") + (blob.type === "image/jpeg" ? ".jpg" : ".webp"));
+      const url = await uploadBlob(blob, fileNameFor(it.name, blob));
       onChange([...imagesRef.current, url]);
       drop(key);
     } catch (err) {
@@ -210,6 +229,33 @@ export default function ImageUploader({
       await addItem(it.key);
     }
   };
+
+  // Lets the form add every chosen photo when you press Save, so the extra button is optional.
+  const flush = async (): Promise<string[]> => {
+    const busy = ["queued", "preparing", "removing", "uploading"];
+    while (itemsRef.current.some((it) => busy.includes(it.status))) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    const urls = [...imagesRef.current];
+    for (const it of itemsRef.current.filter((x) => x.status === "ready")) {
+      const blob = it.use === "cut" && it.cutBlob ? it.cutBlob : it.originalBlob;
+      if (!blob) continue;
+      patch(it.key, { status: "uploading", error: undefined });
+      try {
+        urls.push(await uploadBlob(blob, fileNameFor(it.name, blob)));
+      } catch (err) {
+        patch(it.key, { status: "ready", error: err instanceof Error ? err.message : "Upload failed." });
+        throw err instanceof Error ? err : new Error("A photo could not be uploaded.");
+      }
+      // Keep the list up to date after every photo, so nothing is lost if a later one fails.
+      imagesRef.current = [...urls];
+      onChange([...urls]);
+      drop(it.key);
+    }
+    return urls;
+  };
+
+  useImperativeHandle(ref, () => ({ flush }));
 
   const move = (i: number, dir: -1 | 1) => {
     const j = i + dir;
@@ -419,8 +465,8 @@ export default function ImageUploader({
       </div>
       {message && <p className="text-sm text-amber-700">{message}</p>}
       <p className="text-xs text-muted">
-        The first photo is the main photo. Background removal runs on your device, so the first photo takes longer while
-        the cleaning tool downloads.
+        The first photo is the main photo. Photos you have chosen are added automatically when you press Save. Background
+        removal runs on your device, so the first photo takes longer while the cleaning tool downloads.
       </p>
     </div>
   );

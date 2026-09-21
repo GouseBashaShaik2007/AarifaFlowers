@@ -1,8 +1,8 @@
 import type { Product } from "./catalog";
 import { tr } from "./catalog";
 
-export const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "917397309203").replace(/\D/g, "");
-/** The number as people read it, for example "+91 73973 09203". Always follows NEXT_PUBLIC_WHATSAPP_NUMBER. */
+export const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919505840425").replace(/\D/g, "");
+/** The number as people read it, for example "+91 95058 40425". Always follows NEXT_PUBLIC_WHATSAPP_NUMBER. */
 export const WHATSAPP_DISPLAY =
   WHATSAPP_NUMBER.length === 12 && WHATSAPP_NUMBER.startsWith("91")
     ? `+91 ${WHATSAPP_NUMBER.slice(2, 7)} ${WHATSAPP_NUMBER.slice(7)}`

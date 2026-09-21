@@ -9,6 +9,12 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  // Plain settings that anyone may see. This file is public on GitHub.
+  // Passwords and keys must NEVER go here. Add them in the Cloudflare dashboard as type "Secret":
+  // ADMIN_PASSWORD, SESSION_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY.
+  "vars": {
+    "NEXT_PUBLIC_WHATSAPP_NUMBER": "919505840425"
+  },
   "services": [
     {
       // The Worker calls itself through this binding. "service" must equal "name" above.

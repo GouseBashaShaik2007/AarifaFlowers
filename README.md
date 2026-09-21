@@ -50,7 +50,7 @@ The site runs on Cloudflare Workers through OpenNext. The settings are in `wrang
 | --- | --- |
 | `ADMIN_PASSWORD` | A long password only you know |
 | `SESSION_SECRET` | Any long random text |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | `917397309203` |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | `919505840425` |
 | `SUPABASE_URL` | Project URL from Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role key from Supabase |
 | `ANTHROPIC_API_KEY` | Optional. Turns on the AI suggestions (see below) |

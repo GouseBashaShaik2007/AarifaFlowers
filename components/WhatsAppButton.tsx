@@ -1,4 +1,7 @@
+"use client";
+
 import { WhatsAppIcon } from "./icons";
+import { trackTap } from "./track";
 
 type Props = {
   href: string;
@@ -7,10 +10,20 @@ type Props = {
   full?: boolean;
   variant?: "solid" | "white";
   className?: string;
+  /** A garland id, or "general" / "custom" for buttons that are not about one garland. Counts the tap. */
+  track?: string;
 };
 
 /** The green "Order on WhatsApp" button. Opens WhatsApp with a ready made message. */
-export default function WhatsAppButton({ href, children, size = "md", full, variant = "solid", className = "" }: Props) {
+export default function WhatsAppButton({
+  href,
+  children,
+  size = "md",
+  full,
+  variant = "solid",
+  className = "",
+  track,
+}: Props) {
   const sizing = size === "lg" ? "px-6 py-3.5 text-base" : "px-3 py-2 text-[13px] sm:px-4 sm:py-2.5 sm:text-sm";
   const colors =
     variant === "white"
@@ -21,6 +34,8 @@ export default function WhatsAppButton({ href, children, size = "md", full, vari
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={track ? () => trackTap(track) : undefined}
+      onAuxClick={track ? () => trackTap(track) : undefined}
       className={`inline-flex items-center justify-center gap-2 rounded-full font-semibold transition active:scale-[0.98] ${sizing} ${colors} ${
         full ? "w-full" : ""
       } ${className}`}

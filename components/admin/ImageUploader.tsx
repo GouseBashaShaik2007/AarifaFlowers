@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { thumbOf } from "@/lib/catalog";
+import { prepareForUpload } from "@/lib/clientImages";
 
 const MAX_PHOTOS = 10;
 const MAX_SIDE = 1600;
@@ -42,8 +43,11 @@ async function downscale(file: File): Promise<Blob> {
 }
 
 async function uploadBlob(blob: Blob, name: string): Promise<string> {
+  // Crop, shrink and convert here in the browser. The server only checks and stores the result.
+  const { full, thumb } = await prepareForUpload(blob);
   const form = new FormData();
-  form.append("file", blob, name);
+  form.append("file", full, name);
+  form.append("thumb", thumb, "thumb-" + name);
   const res = await fetch("/api/admin/upload", { method: "POST", body: form });
   let data: { url?: string; error?: string } = {};
   try {

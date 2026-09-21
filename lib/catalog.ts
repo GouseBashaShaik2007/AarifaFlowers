@@ -139,6 +139,8 @@ export type Product = {
   description: Text;
   /** Starting price in rupees. */
   price: number;
+  /** Optional highest price. When set, the site shows a range such as ₹1,499 – ₹2,499. */
+  maxPrice?: number;
   occasions: OccasionId[];
   types: TypeId[];
   flowers: FlowerId[];

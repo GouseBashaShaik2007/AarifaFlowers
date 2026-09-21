@@ -14,6 +14,7 @@ import {
   type Product,
   type Text,
 } from "@/lib/catalog";
+import AiSuggest from "./AiSuggest";
 import ImageUploader from "./ImageUploader";
 
 type Option = { id: string; label: Record<Lang, string>; emoji: string };
@@ -96,7 +97,7 @@ function Toggle({
 const input =
   "w-full rounded-xl border border-line bg-white px-4 py-3 text-base outline-none focus:border-rose focus:ring-2 focus:ring-rose/20";
 
-export default function ProductForm({ product }: { product?: Product }) {
+export default function ProductForm({ product, aiEnabled }: { product?: Product; aiEnabled: boolean }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState("");
@@ -106,6 +107,7 @@ export default function ProductForm({ product }: { product?: Product }) {
   const [description, setDescription] = useState<Text>(product?.description ?? {});
   const [tab, setTab] = useState<Lang>("en");
   const [price, setPrice] = useState(product ? String(product.price) : "");
+  const [maxPrice, setMaxPrice] = useState(product?.maxPrice ? String(product.maxPrice) : "");
   const [occasions, setOccasions] = useState<string[]>(product?.occasions ?? []);
   const [types, setTypes] = useState<string[]>(product?.types ?? []);
   const [flowers, setFlowers] = useState<string[]>(product?.flowers ?? []);
@@ -128,6 +130,11 @@ export default function ProductForm({ product }: { product?: Product }) {
       setError("Please enter the starting price in rupees.");
       return;
     }
+    const numericMax = maxPrice.trim() === "" ? null : Number(maxPrice);
+    if (numericMax !== null && (!Number.isFinite(numericMax) || numericMax <= numeric)) {
+      setError("The highest price must be more than the starting price. Leave it empty if there is no range.");
+      return;
+    }
     if (waiting > 0 && !window.confirm(`${waiting} new photo(s) have not been added yet and will be lost. Save anyway?`)) {
       return;
     }
@@ -137,6 +144,7 @@ export default function ProductForm({ product }: { product?: Product }) {
         name,
         description,
         price: numeric,
+        maxPrice: numericMax,
         occasions,
         types,
         flowers,
@@ -190,6 +198,17 @@ export default function ProductForm({ product }: { product?: Product }) {
       </Card>
 
       <Card title="Name and description" hint="English is required. Other languages are optional. If empty, the English text is shown.">
+        <AiSuggest
+          images={images}
+          occasions={occasions}
+          types={types}
+          flowers={flowers}
+          enabled={aiEnabled}
+          onUse={(s) => {
+            setName(s.name);
+            setDescription(s.description);
+          }}
+        />
         <div role="tablist" className="mb-4 flex flex-wrap gap-2">
           {LANGS.map((l) => {
             const filled = Boolean(name[l]?.trim());
@@ -243,24 +262,55 @@ export default function ProductForm({ product }: { product?: Product }) {
         </div>
       </Card>
 
-      <Card title="Price" hint="Customers see this as the starting price. You confirm the final price on WhatsApp.">
-        <label htmlFor="price" className="mb-1.5 block text-sm font-medium text-ink">
-          Starting price (₹) <span className="text-rose">*</span>
-        </label>
-        <div className="relative max-w-xs">
-          <span className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-muted">₹</span>
-          <input
-            id="price"
-            className={`${input} ps-9`}
-            inputMode="numeric"
-            type="number"
-            min={0}
-            step={1}
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="1499"
-          />
+      <Card
+        title="Price"
+        hint="Customers see the starting price with the word From. Add a highest price to show a range instead. You confirm the final price on WhatsApp."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="price" className="mb-1.5 block text-sm font-medium text-ink">
+              Starting price (₹) <span className="text-rose">*</span>
+            </label>
+            <div className="relative">
+              <span className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-muted">₹</span>
+              <input
+                id="price"
+                className={`${input} ps-9`}
+                inputMode="numeric"
+                type="number"
+                min={0}
+                step={1}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="1499"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="maxPrice" className="mb-1.5 block text-sm font-medium text-ink">
+              Highest price (₹) <span className="font-normal text-muted">optional</span>
+            </label>
+            <div className="relative">
+              <span className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-muted">₹</span>
+              <input
+                id="maxPrice"
+                className={`${input} ps-9`}
+                inputMode="numeric"
+                type="number"
+                min={0}
+                step={1}
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                placeholder="2499"
+              />
+            </div>
+          </div>
         </div>
+        {price.trim() !== "" && maxPrice.trim() !== "" && Number(maxPrice) > Number(price) && (
+          <p className="mt-3 text-sm text-muted">
+            Customers will see <span className="font-semibold text-rose-deep">₹{Number(price).toLocaleString("en-IN")} – ₹{Number(maxPrice).toLocaleString("en-IN")}</span>
+          </p>
+        )}
       </Card>
 
       <Card title="Occasion and type" hint="Pick everything that fits. A garland can belong to more than one.">

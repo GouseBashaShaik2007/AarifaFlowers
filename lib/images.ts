@@ -1,42 +1,21 @@
-import sharp from "sharp";
+// Server side checks for uploaded photos.
+//
+// The browser already cropped, resized and converted the photo (see lib/clientImages.ts).
+// The server only makes sure the upload really is a photo before it is stored.
 
 export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 
+export type ImageType = "image/webp" | "image/png" | "image/jpeg";
+
+const ascii = (bytes: Uint8Array, from: number, to: number) => String.fromCharCode(...bytes.slice(from, to));
+
 /**
- * Turns an uploaded photo into a web friendly WebP (keeps transparency)
- * plus a small thumbnail for cards. Cut-outs with a transparent background
- * are cropped to the garland so every product fills its card the same way.
+ * Looks at the first bytes of a file to see what it really is, whatever its name says.
+ * Returns null for anything that is not a WebP, PNG or JPEG photo.
  */
-export async function processImage(input: Buffer): Promise<{ full: Buffer; thumb: Buffer }> {
-  let source = await sharp(input, { failOn: "none" }).rotate().toBuffer();
-
-  const meta = await sharp(source).metadata();
-  if (meta.hasAlpha) {
-    try {
-      const trimmed = await sharp(source).trim({ threshold: 1 }).toBuffer({ resolveWithObject: true });
-      // Ignore a trim that would leave almost nothing, which means the image was not a real cut-out.
-      if (trimmed.info.width > 80 && trimmed.info.height > 80) {
-        const pad = Math.round(Math.max(trimmed.info.width, trimmed.info.height) * 0.04);
-        source = await sharp(trimmed.data)
-          .extend({ top: pad, bottom: pad, left: pad, right: pad, background: { r: 0, g: 0, b: 0, alpha: 0 } })
-          .png()
-          .toBuffer();
-      }
-    } catch {
-      // Keep the untrimmed image if trimming fails.
-    }
-  }
-
-  const base = sharp(source);
-  const full = await base
-    .clone()
-    .resize({ width: 1200, height: 1200, fit: "inside", withoutEnlargement: true })
-    .webp({ quality: 86, alphaQuality: 92 })
-    .toBuffer();
-  const thumb = await base
-    .clone()
-    .resize({ width: 600, height: 600, fit: "inside", withoutEnlargement: true })
-    .webp({ quality: 80, alphaQuality: 85 })
-    .toBuffer();
-  return { full, thumb };
+export function sniffImage(bytes: Uint8Array): ImageType | null {
+  if (bytes.length > 12 && ascii(bytes, 0, 4) === "RIFF" && ascii(bytes, 8, 12) === "WEBP") return "image/webp";
+  if (bytes.length > 8 && bytes[0] === 0x89 && ascii(bytes, 1, 4) === "PNG") return "image/png";
+  if (bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  return null;
 }

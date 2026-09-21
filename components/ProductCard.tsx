@@ -41,9 +41,9 @@ export default function ProductCard({ product, lang, t }: { product: Product; la
             {name}
           </Link>
         </h3>
-        <PriceLabel t={t} price={product.price} className="text-sm text-rose-deep" />
+        <PriceLabel t={t} price={product.price} maxPrice={product.maxPrice} className="text-sm text-rose-deep" />
         <div className="mt-auto pt-1">
-          <WhatsAppButton href={waLink(productMessage(product))} full>
+          <WhatsAppButton href={waLink(productMessage(product))} full track={product.id}>
             {t.orderWhatsApp}
           </WhatsAppButton>
         </div>

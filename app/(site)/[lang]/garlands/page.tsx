@@ -134,7 +134,9 @@ export default async function GarlandsPage({
             <h2 className="font-semibold text-ink">✨ {t.customTitle}</h2>
             <p className="mt-1 text-sm text-muted">{t.customText}</p>
           </div>
-          <WhatsAppButton href={waLink(customMessage)}>{t.customCta}</WhatsAppButton>
+          <WhatsAppButton href={waLink(customMessage)} track="custom">
+            {t.customCta}
+          </WhatsAppButton>
         </div>
       )}
     </div>

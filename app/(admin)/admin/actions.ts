@@ -13,9 +13,18 @@ import {
   type Text,
   type TypeId,
 } from "@/lib/catalog";
-import { deleteProduct, getProduct, loadSampleProducts, removeImage, saveProduct } from "@/lib/store";
+import {
+  deleteProduct,
+  deleteProducts,
+  getProduct,
+  listProducts,
+  loadSampleProducts,
+  removeImage,
+  saveProduct,
+  saveProducts,
+} from "@/lib/store";
 
-export type ActionResult = { ok: true; id?: string } | { ok: false; error: string };
+export type ActionResult = { ok: true; id?: string; count?: number; ids?: string[] } | { ok: false; error: string };
 
 async function guard(): Promise<ActionResult | null> {
   return (await isAdmin()) ? null : { ok: false, error: "Please log in again." };
@@ -49,6 +58,8 @@ export type ProductInput = {
   name: Text;
   description: Text;
   price: number;
+  /** Optional highest price. Empty or null means the garland only has a starting price. */
+  maxPrice?: number | null;
   occasions: string[];
   types: string[];
   flowers: string[];
@@ -92,6 +103,14 @@ export async function saveProductAction(input: ProductInput): Promise<ActionResu
       return { ok: false, error: "Please enter a valid starting price." };
     }
 
+    let maxPrice: number | undefined;
+    if (input.maxPrice !== null && input.maxPrice !== undefined && String(input.maxPrice) !== "") {
+      maxPrice = Math.round(Number(input.maxPrice));
+      if (!Number.isFinite(maxPrice) || maxPrice <= price || maxPrice > 10_000_000) {
+        return { ok: false, error: "The highest price must be more than the starting price." };
+      }
+    }
+
     const images = (input.images ?? [])
       .filter((u) => typeof u === "string" && u.length < 600 && (u.startsWith("/") || u.startsWith("https://")))
       .slice(0, 10);
@@ -104,6 +123,7 @@ export async function saveProductAction(input: ProductInput): Promise<ActionResu
       name,
       description: cleanText(input.description, 1200),
       price,
+      ...(maxPrice !== undefined ? { maxPrice } : {}),
       occasions: pick<OccasionId>(input.occasions ?? [], OCCASION_IDS),
       types: pick<TypeId>(input.types ?? [], TYPE_IDS),
       flowers: pick<FlowerId>(input.flowers ?? [], FLOWER_IDS),
@@ -162,5 +182,76 @@ export async function loadSamplesAction(): Promise<ActionResult> {
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Could not add sample products." };
+  }
+}
+
+// ---------- bulk actions ----------
+
+const MAX_BULK = 200;
+
+function cleanIds(ids: unknown): string[] {
+  return Array.isArray(ids)
+    ? Array.from(new Set(ids.filter((i): i is string => typeof i === "string" && i.length > 0 && i.length < 100))).slice(0, MAX_BULK)
+    : [];
+}
+
+/** Sets Fresh Today and/or Featured on many garlands at once, with a single save. */
+export async function bulkUpdateAction(
+  ids: string[],
+  patch: { available?: boolean; featured?: boolean },
+): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  const wanted = new Set(cleanIds(ids));
+  if (wanted.size === 0) return { ok: false, error: "Nothing is selected." };
+  if (typeof patch.available !== "boolean" && typeof patch.featured !== "boolean") {
+    return { ok: false, error: "Nothing to change." };
+  }
+  try {
+    const now = new Date().toISOString();
+    const changed = (await listProducts())
+      .filter((p) => wanted.has(p.id))
+      .map((p) => ({
+        ...p,
+        available: typeof patch.available === "boolean" ? patch.available : p.available,
+        featured: typeof patch.featured === "boolean" ? patch.featured : p.featured,
+        updatedAt: now,
+      }));
+    await saveProducts(changed);
+    return { ok: true, count: changed.length };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not update." };
+  }
+}
+
+export async function bulkDeleteAction(ids: string[]): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  const wanted = new Set(cleanIds(ids));
+  if (wanted.size === 0) return { ok: false, error: "Nothing is selected." };
+  try {
+    const existing = (await listProducts()).filter((p) => wanted.has(p.id));
+    await deleteProducts(existing.map((p) => p.id));
+    for (const p of existing) for (const url of p.images) await removeImage(url);
+    return { ok: true, count: existing.length };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not delete." };
+  }
+}
+
+/**
+ * The morning reset. Turns Fresh Today on for every garland that is off.
+ * Returns the ids it changed, so the admin can undo it.
+ */
+export async function markAllFreshAction(): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  try {
+    const now = new Date().toISOString();
+    const off = (await listProducts()).filter((p) => !p.available);
+    await saveProducts(off.map((p) => ({ ...p, available: true, updatedAt: now })));
+    return { ok: true, count: off.length, ids: off.map((p) => p.id) };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not update." };
   }
 }

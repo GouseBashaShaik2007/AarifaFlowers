@@ -50,7 +50,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
                 {t.browse}
                 <ArrowIcon />
               </Link>
-              <WhatsAppButton href={waLink(generalMessage)} size="lg">
+              <WhatsAppButton href={waLink(generalMessage)} size="lg" track="general">
                 {t.orderWhatsApp}
               </WhatsAppButton>
             </div>
@@ -175,7 +175,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             <h2 className="h-display text-2xl font-semibold sm:text-3xl">✨ {t.customTitle}</h2>
             <p className="mt-2 text-white/90">{t.customText}</p>
           </div>
-          <WhatsAppButton href={waLink(customMessage)} variant="white" size="lg" className="shrink-0">
+          <WhatsAppButton href={waLink(customMessage)} variant="white" size="lg" className="shrink-0" track="custom">
             {t.customCta}
           </WhatsAppButton>
         </div>

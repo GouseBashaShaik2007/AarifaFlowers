@@ -71,8 +71,8 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
               {product.available ? `🌿 ${t.freshToday}` : t.unavailable}
             </span>
             <h1 className="h-display mt-3 text-3xl font-semibold text-ink sm:text-4xl">{name}</h1>
-            <PriceLabel t={t} price={product.price} className="mt-3 block text-2xl text-rose-deep" />
-            <p className="mt-1 text-sm text-muted">{t.priceNote}</p>
+            <PriceLabel t={t} price={product.price} maxPrice={product.maxPrice} className="mt-3 block text-2xl text-rose-deep" />
+            <p className="mt-1 text-sm text-muted">{product.maxPrice && product.maxPrice > product.price ? t.rangeNote : t.priceNote}</p>
 
             {description && <p className="mt-5 text-base text-ink/90">{description}</p>}
 
@@ -108,7 +108,7 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
             </div>
 
             <div className="mt-6 hidden md:block">
-              <WhatsAppButton href={orderHref} size="lg" full>
+              <WhatsAppButton href={orderHref} size="lg" full track={product.id}>
                 {t.orderWhatsApp}
               </WhatsAppButton>
             </div>
@@ -132,8 +132,8 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
       {/* Order bar that stays on screen on phones */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 p-3 backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <PriceLabel t={t} price={product.price} className="shrink-0 text-sm text-rose-deep" />
-          <WhatsAppButton href={orderHref} full className="flex-1">
+          <PriceLabel t={t} price={product.price} maxPrice={product.maxPrice} className="shrink-0 text-sm text-rose-deep" />
+          <WhatsAppButton href={orderHref} full className="flex-1" track={product.id}>
             {t.orderWhatsApp}
           </WhatsAppButton>
         </div>

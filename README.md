@@ -4,8 +4,9 @@ A catalogue website for fresh handmade garlands. Customers browse photos by occa
 
 - Languages: English, Hindi, Telugu, Urdu (Urdu reads right to left)
 - Orders: a WhatsApp message with the garland name and starting price already filled in
-- Admin: add, edit and delete garlands, upload photos with automatic background removal, set price, Fresh Today, Featured
-- WhatsApp number: +91 73973 09203
+- Admin: add, edit and delete garlands, upload photos with automatic background removal, set a starting price or a price range, Fresh Today, Featured
+- Admin list: search, filters, bulk actions, and a count of how often customers tap Order on WhatsApp, made for use on a phone
+- WhatsApp number: set in `NEXT_PUBLIC_WHATSAPP_NUMBER` (in `.env.local` and on Vercel). The buttons and the number shown in the footer both follow it.
 
 ## Run it on your computer
 
@@ -51,6 +52,35 @@ You need a free GitHub account, a free Vercel account and a free Supabase accoun
 5. Log in at `/admin`, press **Add sample garlands** if you want the samples, or add your own.
 
 `NEXT_PUBLIC_SITE_URL` adds a link to the garland inside every WhatsApp order message, so you can see the exact photo the customer chose.
+
+## Search, bulk actions and WhatsApp taps
+
+- **Search and filters:** type a name or flower, or pick a status, occasion or type. All words must match.
+- **Bulk actions:** tick garlands, then use the bar at the bottom: Mark Fresh Today, Mark Not available, Feature, Remove Featured, Delete. Delete asks first. Only garlands you can see are affected.
+- **Morning reset:** the **Mark all Fresh Today** button at the top turns Fresh Today on for every garland in one tap. It asks first and shows how many will change. Afterwards an **Undo** notice stays for 15 seconds. Then switch off the few garlands you cannot make today. It ignores any search or filter you have on.
+- **Sorting:** Newest first, Price low to high, Price high to low, or A to Z.
+- **Compact view:** the **Compact** button shows one short line per garland, with a Fresh switch. **Cards** shows the full cards. Your choice is remembered on that phone.
+- **WhatsApp message preview:** the **Preview** button on each card shows the exact message a customer sends for that garland. You can copy it or open it in WhatsApp.
+- **Not available:** a garland marked Not available stays on the website, greyed out with a "Not available today" badge.
+- **Price range:** fill in a highest price to show "₹1,499 – ₹2,499". Leave it empty to show "From ₹1,499".
+- **WhatsApp taps:** each time a customer presses an Order on WhatsApp button, one is added to that garland's count. The top five of the last 30 days show above the list. Only the garland and the day are saved. Nothing about the customer is saved. Your own taps while logged in are not counted. If you set up Supabase before this feature existed, run `supabase.sql` again. It is safe to repeat.
+
+## AI suggestions for name and description
+
+In the admin page, after you add photos, the **Suggest name and description with AI** button reads your photos and writes a name and a short description in English, Hindi, Telugu and Urdu. You see the text first and press **Use this text** only if you like it.
+
+To turn it on:
+
+1. Create an account and an API key at console.anthropic.com.
+2. Put the key in `.env.local` as `ANTHROPIC_API_KEY=your-key` (on Vercel, add the same name under Environment Variables).
+3. Restart `npm run dev`.
+
+Good to know:
+
+- Your photos are sent to Anthropic when you press the button. Nothing is sent otherwise.
+- Each suggestion is billed to your Anthropic account. It should be a few cents. Check the usage page to see the real amount.
+- It uses `claude-opus-5`. To make it cheaper, add `ANTHROPIC_MODEL=claude-sonnet-5`.
+- Read the Hindi, Telugu and Urdu before you publish. The AI can make mistakes.
 
 ## Things you may want to change
 

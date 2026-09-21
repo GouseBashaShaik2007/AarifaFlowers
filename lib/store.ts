@@ -1,7 +1,7 @@
 // Storage for products and photos.
 //
 // Two backends, chosen automatically:
-//  - Supabase (when SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set). Use this on Vercel.
+//  - Supabase (when SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set). Use this on Cloudflare or Vercel.
 //  - Local files in ./data (default). Fine for running on your own computer.
 //
 // Server only. Never import this file from a client component.
@@ -21,8 +21,11 @@ const LOCAL_URL_PREFIX = "/api/uploads/";
 
 export const usingSupabase = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-/** On Vercel the disk is read only, so local file storage cannot save anything. */
-export const storageReadOnly = !usingSupabase && Boolean(process.env.VERCEL);
+/** True when running on Cloudflare Workers, which have no disk to save files on. */
+const onCloudflare = typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
+
+/** On Cloudflare and Vercel the disk is read only, so local file storage cannot save anything. */
+export const storageReadOnly = !usingSupabase && (onCloudflare || Boolean(process.env.VERCEL));
 
 let client: SupabaseClient | null = null;
 function supabase(): SupabaseClient {
@@ -41,7 +44,7 @@ function sortProducts(list: Product[]): Product[] {
 function assertWritable() {
   if (storageReadOnly) {
     throw new Error(
-      "Saving is not set up yet. Add the Supabase keys in the Vercel project settings, then redeploy. See README.",
+      "Saving is not set up yet. Add the Supabase keys (SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY) in your hosting settings, then redeploy. See README.",
     );
   }
 }
@@ -109,6 +112,39 @@ export async function deleteProduct(id: string): Promise<void> {
   await writeLocal((await readLocal()).filter((p) => p.id !== id));
 }
 
+/** Saves many garlands with one write. Faster and safer than saving them one by one. */
+export async function saveProducts(products: Product[]): Promise<void> {
+  assertWritable();
+  if (products.length === 0) return;
+  if (usingSupabase) {
+    const { error } = await supabase()
+      .from("products")
+      .upsert(products.map((p) => ({ id: p.id, data: p })));
+    if (error) throw new Error(`Could not save products: ${error.message}`);
+    return;
+  }
+  const list = await readLocal();
+  for (const product of products) {
+    const i = list.findIndex((p) => p.id === product.id);
+    if (i >= 0) list[i] = product;
+    else list.push(product);
+  }
+  await writeLocal(list);
+}
+
+/** Deletes many garlands with one write. */
+export async function deleteProducts(ids: string[]): Promise<void> {
+  assertWritable();
+  if (ids.length === 0) return;
+  if (usingSupabase) {
+    const { error } = await supabase().from("products").delete().in("id", ids);
+    if (error) throw new Error(`Could not delete products: ${error.message}`);
+    return;
+  }
+  const gone = new Set(ids);
+  await writeLocal((await readLocal()).filter((p) => !gone.has(p.id)));
+}
+
 export async function loadSampleProducts(): Promise<void> {
   assertWritable();
   for (const p of SEED_PRODUCTS) {
@@ -116,8 +152,69 @@ export async function loadSampleProducts(): Promise<void> {
   }
 }
 
+// ---------- WhatsApp tap counts ----------
+// One counter per garland per day (India time). No visitor information is stored.
+
+const TAPS_FILE = path.join(DATA_DIR, "taps.json");
+type TapData = Record<string, Record<string, number>>;
+let tapQueue: Promise<unknown> = Promise.resolve();
+
+const indiaDay = (msAgo = 0) =>
+  new Date(Date.now() - msAgo).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+
+async function readTaps(): Promise<TapData> {
+  try {
+    return JSON.parse(await fs.readFile(TAPS_FILE, "utf8")) as TapData;
+  } catch {
+    return {};
+  }
+}
+
+export async function recordTap(id: string): Promise<void> {
+  if (usingSupabase) {
+    const { error } = await supabase().rpc("increment_tap", { p_id: id, p_day: indiaDay() });
+    if (error) throw new Error(`Could not count tap: ${error.message}`);
+    return;
+  }
+  if (storageReadOnly) return; // nowhere to save on a read only disk
+  // One at a time, so two quick taps do not overwrite each other.
+  tapQueue = tapQueue
+    .then(async () => {
+      const data = await readTaps();
+      const day = indiaDay();
+      data[id] = { ...data[id], [day]: (data[id]?.[day] ?? 0) + 1 };
+      const oldest = indiaDay(90 * 86_400_000);
+      for (const key of Object.keys(data)) {
+        for (const d of Object.keys(data[key])) if (d < oldest) delete data[key][d];
+      }
+      await fs.mkdir(DATA_DIR, { recursive: true });
+      await fs.writeFile(TAPS_FILE, JSON.stringify(data), "utf8");
+    })
+    .catch(() => undefined);
+  await tapQueue;
+}
+
+/** Taps per garland id (plus "general" and "custom") over the last N days. */
+export async function getTapCounts(days = 30): Promise<Record<string, number>> {
+  const since = indiaDay((days - 1) * 86_400_000);
+  const totals: Record<string, number> = {};
+  if (usingSupabase) {
+    const { data, error } = await supabase().from("taps").select("product_id, count").gte("day", since);
+    if (error) throw new Error(`Could not load tap counts: ${error.message}`);
+    for (const row of data ?? []) {
+      totals[row.product_id] = (totals[row.product_id] ?? 0) + Number(row.count);
+    }
+    return totals;
+  }
+  const data = await readTaps();
+  for (const [id, byDay] of Object.entries(data)) {
+    for (const [day, n] of Object.entries(byDay)) if (day >= since) totals[id] = (totals[id] ?? 0) + n;
+  }
+  return totals;
+}
+
 /** Stores a processed photo (full size and thumbnail) and returns the public URL of the full size one. */
-export async function putImage(full: Buffer, thumb: Buffer): Promise<string> {
+export async function putImage(full: Buffer, thumb: Buffer, contentType = "image/webp"): Promise<string> {
   assertWritable();
   const base = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const fullName = `${base}.webp`;
@@ -125,7 +222,7 @@ export async function putImage(full: Buffer, thumb: Buffer): Promise<string> {
 
   if (usingSupabase) {
     const bucket = supabase().storage.from(BUCKET);
-    const opts = { contentType: "image/webp", cacheControl: "31536000" };
+    const opts = { contentType, cacheControl: "31536000" };
     const a = await bucket.upload(fullName, full, opts);
     if (a.error) throw new Error(`Photo upload failed: ${a.error.message}`);
     const b = await bucket.upload(thumbName, thumb, opts);

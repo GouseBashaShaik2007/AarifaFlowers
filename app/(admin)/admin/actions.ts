@@ -14,7 +14,7 @@ import {
   type TypeId,
 } from "@/lib/catalog";
 import type { Review } from "@/lib/content";
-import { cleanHandle, MAX_REELS, normalizeReelUrl, type Reel } from "@/lib/instagram";
+import { cleanHandle, isPlayerMode, MAX_REELS, normalizeReelUrl, type PlayerMode, type Reel } from "@/lib/instagram";
 import {
   deleteReview,
   getInstagramSettings,
@@ -382,7 +382,12 @@ export async function setReviewPublishedAction(id: string, published: boolean): 
 
 // ---------- Instagram reels ----------
 
-export async function saveInstagramAction(input: { enabled: boolean; handle: string; reels: Reel[] }): Promise<ActionResult> {
+export async function saveInstagramAction(input: {
+  enabled: boolean;
+  handle: string;
+  mode: PlayerMode;
+  reels: Reel[];
+}): Promise<ActionResult> {
   const denied = await guard();
   if (denied) return denied;
   try {
@@ -403,19 +408,26 @@ export async function saveInstagramAction(input: { enabled: boolean; handle: str
         }
         url = tidy;
       }
+      const video = submitted[i]?.video ? String(submitted[i].video) : undefined;
+      if (video && !(goodPhotoAddress(video) && /\.mp4$/i.test(video))) {
+        return { ok: false, error: `The video of reel ${i + 1} has an address that is not allowed. Remove it and add it again.` };
+      }
       const poster = submitted[i]?.poster ? String(submitted[i].poster) : undefined;
       if (poster && !goodPhotoAddress(poster)) {
         return { ok: false, error: `The preview picture of reel ${i + 1} has an address that is not allowed. Remove it and add it again.` };
       }
-      reels.push({ url, ...(poster ? { poster } : {}) });
+      reels.push({ url, ...(poster ? { poster } : {}), ...(video ? { video } : {}) });
     }
 
     const before = await getInstagramSettings();
-    await saveInstagramSettings({ enabled: Boolean(input.enabled), handle, reels });
+    const mode: PlayerMode = isPlayerMode(input.mode) ? input.mode : "preview";
+    await saveInstagramSettings({ enabled: Boolean(input.enabled), handle, mode, reels });
 
     // Delete preview pictures that are no longer used.
     const kept = new Set(reels.map((r) => r.poster).filter(Boolean));
     for (const old of before.reels) if (old.poster && !kept.has(old.poster)) await removeImage(old.poster);
+    const keptVideos = new Set(reels.map((r) => r.video).filter(Boolean));
+    for (const old of before.reels) if (old.video && !keptVideos.has(old.video)) await removeImage(old.video);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Could not save." };

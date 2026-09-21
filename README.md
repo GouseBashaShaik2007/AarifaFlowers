@@ -87,18 +87,32 @@ To try the site the way Cloudflare runs it, copy `.env.local` to `.dev.vars` and
 - **Filter bar:** on the garlands page the occasion buttons stay under the header while you scroll. The other filters open under the Filters button.
 - **Supabase:** announcements and stories use a new `settings` table. If you set up Supabase earlier, run `supabase.sql` again. It is safe to repeat. Until you do, the site keeps using the suggested texts and saving an announcement shows an error that says so.
 
-## Instagram reels
+## Instagram reels and videos
 
-The home page has a **See Our Garlands in Action** section above the custom design banner. It shows your reels as a swipe carousel on phones and three columns on larger screens. The title, subtitle and button are translated into all four languages.
-
-Manage it in the admin page, **Instagram** tab:
+The home page has a **See Our Garlands in Action** section above the custom design banner. Manage it in the admin page, **Instagram** tab:
 
 - **Show on the website** switch: turns the whole section on or off.
-- **Instagram name:** used by the Follow button. Change it if the account changes.
-- **Reels:** paste the link of each reel. On Instagram open the reel, tap Share, then Copy link. You can add up to 6, move them up or down, and remove them. A reel with an empty link shows a card that opens your Instagram page. The section stays hidden while there are no reels.
-- **Preview picture (optional):** a screenshot shown on the card before someone taps play. Without one, the card shows a soft flower design.
+- **Instagram name:** used by the Follow button.
+- **How the reels play**, three choices:
+  - **Instagram, tap to play** (recommended): light cards that load Instagram's player only when someone taps. Nothing is loaded from Instagram until then.
+  - **Instagram, official embed:** Instagram's own post box. It loads Instagram's script when the section comes into view, so it is slower and uses more data.
+  - **My own videos:** MP4 files you upload, played right on your website. They start muted as they scroll into view, one at a time, and stop when they scroll away. Tap to pause, and use the round button for sound.
+- **Reels or videos:** up to 6. Paste a reel link (Instagram, Share, Copy link) or upload a video for each card. You can move them and remove them. With your own videos, a card without a video is not shown, and an Instagram link is optional and adds a small Watch on Instagram link.
+- **Preview picture:** optional. With your own videos one is made from the video for you.
 
-Each reel starts as a light preview card. Instagram's own player loads only after someone taps play, which keeps the home page fast and stops Instagram from setting cookies until a visitor chooses to watch. Until you save anything in the Instagram tab, the site shows three starter cards that open your Instagram page.
+Nothing plays by itself for visitors who asked their phone for less motion or for data saving.
+
+### Making videos that load fast
+
+Visitors download every video they watch, so small files matter most. Aim for 720 by 1280 (tall), 10 to 30 seconds, and 2 to 5 MB. The limit is 10 MB. This command makes a good file from a phone video, using the free ffmpeg tool:
+
+```
+ffmpeg -i input.mov -vf "scale=720:-2" -c:v libx264 -crf 28 -preset slow -pix_fmt yuv420p -movflags +faststart -c:a aac -b:a 64k output.mp4
+```
+
+The `faststart` part lets the video begin before it has fully downloaded. An iPhone records in a format many browsers cannot play, so set Camera, Formats, Most Compatible, or convert with the command above. The admin page checks that your browser can play the file before it uploads it.
+
+The free Supabase plan has a small monthly download allowance for files (about 5 GB when this was written, so please check your plan). At 4 MB per video that is roughly 1,200 plays a month. If the site grows, move the videos to Cloudflare R2, which does not charge for downloads, or Cloudflare Stream.
 
 ## AI suggestions for name and description
 

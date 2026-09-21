@@ -1,10 +1,21 @@
-// Instagram reels for "See Our Garlands in Action" on the home page.
+// Instagram reels and videos for "See Our Garlands in Action" on the home page.
 //
-// The owner manages the reels in the admin page (Instagram tab). The values below are only the starting
+// The owner manages everything in the admin page (Instagram tab). The values below are only the starting
 // point, used until the owner saves their own. Safe to import anywhere.
 
 export const DEFAULT_HANDLE = "aarifashaik31";
 export const MAX_REELS = 6;
+
+/**
+ * How the reels play:
+ *  preview  Light cards. Instagram's player loads only when a visitor taps play. (Recommended.)
+ *  embed    Instagram's official embed, which loads Instagram's own script when the section comes into view.
+ *  video    The owner's own MP4 videos, played by the browser. No Instagram needed.
+ */
+export type PlayerMode = "preview" | "embed" | "video";
+
+export const isPlayerMode = (value: unknown): value is PlayerMode =>
+  value === "preview" || value === "embed" || value === "video";
 
 export type Reel = {
   /** The reel address. Empty means no reel yet, so the card opens the Instagram page. */
@@ -13,6 +24,8 @@ export type Reel = {
   title?: string;
   /** Optional preview picture. */
   poster?: string;
+  /** An uploaded MP4 video, used when the player is set to "video". */
+  video?: string;
 };
 
 export type InstagramSettings = {
@@ -20,18 +33,26 @@ export type InstagramSettings = {
   enabled: boolean;
   /** The Instagram name without the @. */
   handle: string;
+  mode: PlayerMode;
   reels: Reel[];
 };
 
 export const DEFAULT_INSTAGRAM: InstagramSettings = {
   enabled: true,
   handle: DEFAULT_HANDLE,
+  mode: "preview",
   reels: [
     { url: "", title: "Making a bridal garland by hand" },
     { url: "", title: "A wedding stage setup" },
     { url: "", title: "Fresh garlands for pooja" },
   ],
 };
+
+/** The cards the website should show. With your own videos, only reels that have a video count. */
+export function visibleReels(settings: InstagramSettings): Reel[] {
+  const list = settings.reels.slice(0, MAX_REELS);
+  return settings.mode === "video" ? list.filter((r) => r.video) : list;
+}
 
 export const profileUrl = (handle: string) => `https://www.instagram.com/${handle}/`;
 

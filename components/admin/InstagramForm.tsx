@@ -2,20 +2,51 @@
 
 import { useRef, useState, useTransition } from "react";
 import { saveInstagramAction } from "@/app/(admin)/admin/actions";
-import { MAX_REELS, cleanHandle, profileUrl, reelCode, reelPageUrl, type InstagramSettings } from "@/lib/instagram";
+import {
+  MAX_REELS,
+  cleanHandle,
+  profileUrl,
+  reelCode,
+  reelPageUrl,
+  type InstagramSettings,
+  type PlayerMode,
+} from "@/lib/instagram";
 import ImageUploader, { type UploaderHandle } from "./ImageUploader";
+import VideoUploader from "./VideoUploader";
 
-type Row = { key: string; url: string; poster?: string };
+type Row = { key: string; url: string; poster?: string; video?: string };
 
 const field =
   "w-full rounded-xl border border-line bg-white px-4 py-3 text-base outline-none focus:border-rose focus:ring-2 focus:ring-rose/20";
 
 const newKey = () => crypto.randomUUID();
 
+const MODES: { id: PlayerMode; title: string; text: string }[] = [
+  {
+    id: "preview",
+    title: "Instagram, tap to play",
+    text: "Recommended. Light cards that load Instagram's player only when someone taps. Fast, and nothing is loaded from Instagram until then.",
+  },
+  {
+    id: "embed",
+    title: "Instagram, official embed",
+    text: "Instagram's own post box. It loads Instagram's script when the section comes into view, so it is slower and uses more data.",
+  },
+  {
+    id: "video",
+    title: "My own videos",
+    text: "Plays videos you upload, right on your website. They start muted as they scroll into view. No Instagram needed.",
+  },
+];
+
 export default function InstagramForm({ initial, neverSaved }: { initial: InstagramSettings; neverSaved: boolean }) {
   const [enabled, setEnabled] = useState(initial.enabled);
   const [handle, setHandle] = useState(initial.handle);
-  const [rows, setRows] = useState<Row[]>(() => initial.reels.map((r) => ({ key: newKey(), url: r.url, poster: r.poster })));
+  const [mode, setMode] = useState<PlayerMode>(initial.mode);
+  const [rows, setRows] = useState<Row[]>(() =>
+    // Fixed keys for the rows that exist at the start, so the server and the browser agree. Rows you add later get random ones.
+    initial.reels.map((r, i) => ({ key: `row-${i}`, url: r.url, poster: r.poster, video: r.video })),
+  );
   const [pending, start] = useTransition();
   const [stage, setStage] = useState("");
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
@@ -59,7 +90,12 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
       const res = await saveInstagramAction({
         enabled,
         handle,
-        reels: finalRows.map((r) => ({ url: r.url, ...(r.poster ? { poster: r.poster } : {}) })),
+        mode,
+        reels: finalRows.map((r) => ({
+          url: r.url,
+          ...(r.poster ? { poster: r.poster } : {}),
+          ...(r.video ? { video: r.video } : {}),
+        })),
       });
       setStage("");
       if (res.ok) {
@@ -72,6 +108,8 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
   };
 
   const cleanedHandle = cleanHandle(handle);
+  const videoMode = mode === "video";
+  const shown = videoMode ? rows.filter((r) => r.video).length : rows.length;
 
   return (
     <form
@@ -84,8 +122,8 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
       <div>
         <h1 className="text-2xl font-semibold text-ink">Instagram reels</h1>
         <p className="mt-1 text-sm text-muted">
-          Controls the See Our Garlands in Action section on the home page. Add reel links, or leave a link empty to show
-          a card that opens your Instagram page.
+          Controls the See Our Garlands in Action section on the home page. Choose how the reels play, then add reel
+          links or your own videos.
         </p>
         {neverSaved && (
           <p className="mt-2 rounded-xl bg-marigold-soft px-3 py-2 text-sm text-ink">
@@ -113,6 +151,37 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
           />
         </span>
       </button>
+
+      <section className="rounded-3xl border border-line bg-white p-5 sm:p-6">
+        <h2 className="text-lg font-semibold text-ink">How the reels play</h2>
+        <div role="radiogroup" aria-label="How the reels play" className="mt-3 space-y-2">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              role="radio"
+              aria-checked={mode === m.id}
+              onClick={() => setMode(m.id)}
+              className={`flex w-full items-start gap-3 rounded-2xl border p-4 text-start transition ${
+                mode === m.id ? "border-rose bg-rose-soft/50" : "border-line bg-white hover:border-rose/40"
+              }`}
+            >
+              <span
+                aria-hidden="true"
+                className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${
+                  mode === m.id ? "border-rose" : "border-line"
+                }`}
+              >
+                {mode === m.id && <span className="h-2.5 w-2.5 rounded-full bg-rose" />}
+              </span>
+              <span>
+                <span className="block font-medium text-ink">{m.title}</span>
+                <span className="block text-sm text-muted">{m.text}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="rounded-3xl border border-line bg-white p-5 sm:p-6">
         <h2 className="text-lg font-semibold text-ink">Instagram name</h2>
@@ -148,10 +217,11 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
       </section>
 
       <section className="rounded-3xl border border-line bg-white p-5 sm:p-6">
-        <h2 className="text-lg font-semibold text-ink">Reels</h2>
+        <h2 className="text-lg font-semibold text-ink">{videoMode ? "Videos" : "Reels"}</h2>
         <p className="mt-0.5 text-sm text-muted">
-          On Instagram open a reel, tap Share, then Copy link, and paste it below. The first three show first on a
-          computer. On a phone customers swipe through all of them.
+          {videoMode
+            ? "Upload a video for each card. You can also paste the Instagram link, which adds a small Watch on Instagram link under the video."
+            : "On Instagram open a reel, tap Share, then Copy link, and paste it below. The first three show first on a computer. On a phone customers swipe through all of them."}
         </p>
 
         <ol className="mt-4 space-y-4">
@@ -161,7 +231,9 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
             return (
               <li key={r.key} className="rounded-2xl border border-line bg-cream/60 p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold text-ink">Reel {i + 1}</p>
+                  <p className="font-semibold text-ink">
+                    {videoMode ? "Video" : "Reel"} {i + 1}
+                  </p>
                   <div className="flex gap-1">
                     <button
                       type="button"
@@ -191,8 +263,20 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
                   </div>
                 </div>
 
+                {videoMode && (
+                  <div className="mt-3 rounded-xl border border-line bg-white p-4">
+                    <p className="mb-2 text-sm font-medium text-ink">Video file</p>
+                    <VideoUploader
+                      video={r.video}
+                      hasPoster={Boolean(r.poster)}
+                      onVideo={(url) => update(r.key, { video: url })}
+                      onPoster={(url) => update(r.key, { poster: url })}
+                    />
+                  </div>
+                )}
+
                 <label htmlFor={`url-${r.key}`} className="mt-3 mb-1.5 block text-sm font-medium text-ink">
-                  Reel link
+                  {videoMode ? "Instagram link (optional)" : "Reel link"}
                 </label>
                 <input
                   id={`url-${r.key}`}
@@ -206,7 +290,8 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
                   placeholder="https://www.instagram.com/reel/…"
                 />
                 <p className={`mt-1 text-xs ${filled && !code ? "text-red-700" : code ? "text-leaf" : "text-muted"}`}>
-                  {!filled && "Empty. This card will open your Instagram page."}
+                  {!filled && !videoMode && "Empty. This card will open your Instagram page."}
+                  {!filled && videoMode && "Empty. No Instagram link is shown under this video."}
                   {filled && code && (
                     <>
                       This looks like a reel.{" "}
@@ -226,8 +311,9 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
                   </summary>
                   <div className="border-t border-line p-4">
                     <p className="mb-3 text-xs text-muted">
-                      Shown on the card before someone taps play. Use a screenshot of the reel. Without one, the card shows
-                      a soft flower design.
+                      {videoMode
+                        ? "Shown before the video starts. One is made from the video for you. Add your own to replace it."
+                        : "Shown on the card before someone taps play. Use a screenshot of the reel. Without one, the card shows a soft flower design."}
                     </p>
                     <ImageUploader
                       ref={(handle) => {
@@ -247,9 +333,11 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
           })}
         </ol>
 
-        {rows.length === 0 && (
+        {shown === 0 && (
           <p className="mt-4 rounded-2xl bg-cream px-4 py-3 text-sm text-muted">
-            No reels. The section is hidden on the website until you add at least one.
+            {videoMode
+              ? "No videos yet. The section is hidden on the website until at least one card has a video."
+              : "No reels. The section is hidden on the website until you add at least one."}
           </p>
         )}
 
@@ -259,7 +347,7 @@ export default function InstagramForm({ initial, neverSaved }: { initial: Instag
           disabled={rows.length >= MAX_REELS}
           className="mt-4 min-h-12 rounded-full border border-dashed border-rose px-5 text-sm font-semibold text-rose hover:bg-rose-soft disabled:opacity-40"
         >
-          {rows.length >= MAX_REELS ? `You can add up to ${MAX_REELS} reels` : "+ Add a reel"}
+          {rows.length >= MAX_REELS ? `You can add up to ${MAX_REELS}` : videoMode ? "+ Add a video" : "+ Add a reel"}
         </button>
       </section>
 

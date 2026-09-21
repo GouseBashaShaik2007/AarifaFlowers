@@ -61,6 +61,10 @@ export const en = {
   reelsFollow: "Follow {handle} on Instagram",
   reelsPlay: "Play reel",
   reelsWatch: "Watch on Instagram",
+  reelsPause: "Pause video",
+  reelsSoundOn: "Turn sound on",
+  reelsSoundOff: "Turn sound off",
+  reelsUnavailable: "This video could not be loaded.",
 };
 
 type Dict = typeof en;
@@ -126,6 +130,10 @@ const hi: Dict = {
   reelsFollow: "Instagram पर {handle} को फ़ॉलो करें",
   reelsPlay: "रील चलाएँ",
   reelsWatch: "Instagram पर देखें",
+  reelsPause: "वीडियो रोकें",
+  reelsSoundOn: "आवाज़ चालू करें",
+  reelsSoundOff: "आवाज़ बंद करें",
+  reelsUnavailable: "यह वीडियो लोड नहीं हो सका।",
 };
 
 const te: Dict = {
@@ -189,6 +197,10 @@ const te: Dict = {
   reelsFollow: "Instagram లో {handle} ను ఫాలో అవ్వండి",
   reelsPlay: "రీల్ ప్లే చేయండి",
   reelsWatch: "Instagram లో చూడండి",
+  reelsPause: "వీడియో ఆపండి",
+  reelsSoundOn: "ధ్వని ఆన్ చేయండి",
+  reelsSoundOff: "ధ్వని ఆఫ్ చేయండి",
+  reelsUnavailable: "ఈ వీడియో లోడ్ కాలేదు.",
 };
 
 const ur: Dict = {
@@ -252,6 +264,10 @@ const ur: Dict = {
   reelsFollow: "انسٹاگرام پر {handle} کو فالو کریں",
   reelsPlay: "ریل چلائیں",
   reelsWatch: "انسٹاگرام پر دیکھیں",
+  reelsPause: "ویڈیو روکیں",
+  reelsSoundOn: "آواز چالو کریں",
+  reelsSoundOff: "آواز بند کریں",
+  reelsUnavailable: "یہ ویڈیو لوڈ نہیں ہو سکی۔",
 };
 
 export const dictionaries: Record<Lang, Dict> = { en, hi, te, ur };

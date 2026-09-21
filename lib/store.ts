@@ -283,6 +283,23 @@ export async function putImage(full: Buffer, thumb: Buffer, contentType = "image
   return LOCAL_URL_PREFIX + fullName;
 }
 
+/** Stores an MP4 video and returns its public address. */
+export async function putVideo(data: Buffer): Promise<string> {
+  assertWritable();
+  const name = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.mp4`;
+
+  if (usingSupabase) {
+    const bucket = supabase().storage.from(BUCKET);
+    const { error } = await bucket.upload(name, data, { contentType: "video/mp4", cacheControl: "31536000" });
+    if (error) throw new Error(`Video upload failed: ${error.message}`);
+    return bucket.getPublicUrl(name).data.publicUrl;
+  }
+
+  await fs.mkdir(UPLOAD_DIR, { recursive: true });
+  await fs.writeFile(path.join(UPLOAD_DIR, name), data);
+  return LOCAL_URL_PREFIX + name;
+}
+
 /** Deletes a photo we stored ourselves. Sample photos and unknown URLs are left alone. */
 export async function removeImage(url: string): Promise<void> {
   const thumbUrl = url.replace(/\.webp$/, "-t.webp");

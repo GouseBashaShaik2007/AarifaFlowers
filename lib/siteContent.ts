@@ -3,7 +3,7 @@
 
 import { cache } from "react";
 import { DEFAULT_SETTINGS, type Review, type SiteSettings } from "./content";
-import { DEFAULT_INSTAGRAM, type InstagramSettings } from "./instagram";
+import { DEFAULT_INSTAGRAM, isPlayerMode, type InstagramSettings } from "./instagram";
 import { readDoc, writeDoc } from "./store";
 
 const SETTINGS_KEY = "site";
@@ -62,6 +62,7 @@ export const getInstagramSettings = cache(async (): Promise<InstagramSettings> =
   return {
     enabled: saved?.enabled ?? DEFAULT_INSTAGRAM.enabled,
     handle: saved?.handle || DEFAULT_INSTAGRAM.handle,
+    mode: isPlayerMode(saved?.mode) ? saved.mode : DEFAULT_INSTAGRAM.mode,
     reels: Array.isArray(saved?.reels) ? saved.reels : DEFAULT_INSTAGRAM.reels,
   };
 });

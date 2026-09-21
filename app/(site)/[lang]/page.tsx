@@ -7,6 +7,7 @@ import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { OCCASIONS, isLang, thumbOf, tr } from "@/lib/catalog";
 import { getDict } from "@/lib/i18n";
+import { visibleReels } from "@/lib/instagram";
 import { getInstagramSettings, getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
 import { listProducts } from "@/lib/store";
 import { customMessage, generalMessage, waLink } from "@/lib/whatsapp";
@@ -205,7 +206,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
       </section>
 
       {/* Instagram reels */}
-      {instagram.enabled && instagram.reels.length > 0 && <InstagramShowcase t={t} settings={instagram} />}
+      {instagram.enabled && visibleReels(instagram).length > 0 && <InstagramShowcase t={t} settings={instagram} />}
 
       {/* Custom design */}
       <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6">

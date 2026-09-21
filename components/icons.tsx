@@ -65,3 +65,30 @@ export function PlayIcon({ className = "h-6 w-6" }: { className?: string }) {
     </svg>
   );
 }
+
+export function PauseIcon({ className = "h-6 w-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <rect x="6" y="5" width="4.2" height="14" rx="1.2" />
+      <rect x="13.8" y="5" width="4.2" height="14" rx="1.2" />
+    </svg>
+  );
+}
+
+export function SoundOnIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M11 5 6 9H3v6h3l5 4V5Z" fill="currentColor" />
+      <path d="M15.5 8.5a5 5 0 0 1 0 7M18.3 5.7a9 9 0 0 1 0 12.6" />
+    </svg>
+  );
+}
+
+export function SoundOffIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M11 5 6 9H3v6h3l5 4V5Z" fill="currentColor" />
+      <path d="m16 9.5 5 5m0-5-5 5" />
+    </svg>
+  );
+}

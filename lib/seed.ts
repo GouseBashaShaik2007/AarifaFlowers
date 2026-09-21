@@ -1,0 +1,241 @@
+import type { Product } from "./catalog";
+
+// Sample products so the website looks complete on day one.
+// The photos are placeholder illustrations from public/samples.
+// Delete these from the admin panel once you add your own garlands.
+
+type Seed = Omit<Product, "createdAt" | "updatedAt" | "images"> & { imageBase: string };
+
+const seeds: Seed[] = [
+  {
+    id: "rose-jasmine-bridal",
+    imageBase: "rose-jasmine-bridal",
+    name: {
+      en: "Premium Rose & Jasmine Bridal Garland",
+      hi: "प्रीमियम गुलाब और चमेली दुल्हन माला",
+      te: "ప్రీమియం గులాబీ & మల్లె వధువు హారం",
+      ur: "پریمیم گلاب اور چنبیلی دلہن ہار",
+    },
+    description: {
+      en: "A full, fragrant garland of pink and red roses with fresh jasmine. Made by hand on the day of your event.",
+      hi: "गुलाबी और लाल गुलाब और ताज़ी चमेली से बनी भरपूर सुगंधित माला। आपके कार्यक्रम के दिन हाथ से तैयार की जाती है।",
+      te: "గులాబీలు, తాజా మల్లెలతో చేసిన సువాసనగల పూర్తి హారం. మీ వేడుక రోజునే చేతితో తయారు చేస్తాము.",
+      ur: "گلابی اور سرخ گلاب اور تازہ چنبیلی سے بنا بھرپور خوشبودار ہار۔ آپ کی تقریب کے دن ہاتھ سے تیار کیا جاتا ہے۔",
+    },
+    price: 1499,
+    occasions: ["wedding"],
+    types: ["bridal", "varmala"],
+    flowers: ["rose", "jasmine"],
+    available: true,
+    featured: true,
+  },
+  {
+    id: "red-rose-varmala",
+    imageBase: "red-rose-varmala",
+    name: {
+      en: "Classic Red Rose Varmala Set",
+      hi: "क्लासिक लाल गुलाब वरमाला सेट",
+      te: "క్లాసిక్ ఎర్ర గులాబీ వరమాల సెట్",
+      ur: "کلاسک سرخ گلاب ورمالا سیٹ",
+    },
+    description: {
+      en: "A pair of matching garlands for the exchange ceremony. Red and pink roses with jasmine accents.",
+      hi: "वरमाला रस्म के लिए एक जैसी दो मालाओं का जोड़ा। लाल और गुलाबी गुलाब के साथ चमेली।",
+      te: "వరమాల ఘట్టం కోసం ఒకేలా ఉండే రెండు హారాల జత. ఎర్ర, గులాబీ రంగు గులాబీలతో మల్లెలు.",
+      ur: "ورمالا کی رسم کے لیے ایک جیسے دو ہاروں کی جوڑی۔ سرخ اور گلابی گلاب کے ساتھ چنبیلی۔",
+    },
+    price: 1999,
+    occasions: ["wedding"],
+    types: ["varmala"],
+    flowers: ["rose", "jasmine"],
+    available: true,
+    featured: true,
+  },
+  {
+    id: "marigold-rose-groom",
+    imageBase: "marigold-rose-groom",
+    name: {
+      en: "Marigold & Rose Groom Garland",
+      hi: "गेंदा और गुलाब दूल्हे की माला",
+      te: "బంతి & గులాబీ వరుడి హారం",
+      ur: "گیندا اور گلاب دولہا ہار",
+    },
+    description: {
+      en: "A rich, heavy garland in bright marigold with red and peach roses. Long lasting and easy to wear.",
+      hi: "चटख गेंदे के साथ लाल और पीच गुलाब से बनी भारी, भव्य माला। लंबे समय तक ताज़ा रहती है।",
+      te: "ముదురు బంతిపూలతో ఎర్ర, పీచ్ గులాబీలు కలిపిన భారీ హారం. ఎక్కువసేపు తాజాగా ఉంటుంది.",
+      ur: "شوخ گیندے کے ساتھ سرخ اور پیچ گلاب سے بنا بھاری اور شاندار ہار۔ دیر تک تازہ رہتا ہے۔",
+    },
+    price: 1299,
+    occasions: ["wedding"],
+    types: ["groom"],
+    flowers: ["marigold", "rose"],
+    available: true,
+    featured: false,
+  },
+  {
+    id: "jasmine-pooja",
+    imageBase: "jasmine-pooja",
+    name: {
+      en: "Fragrant Jasmine Pooja Garland",
+      hi: "सुगंधित चमेली पूजा माला",
+      te: "సువాసనగల మల్లె పూజా హారం",
+      ur: "خوشبودار چنبیلی پوجا ہار",
+    },
+    description: {
+      en: "A simple white jasmine garland for daily pooja, temple offerings and festivals.",
+      hi: "रोज़ की पूजा, मंदिर में चढ़ाने और त्योहारों के लिए सादी सफ़ेद चमेली की माला।",
+      te: "రోజువారీ పూజ, ఆలయ సమర్పణ, పండుగల కోసం సాదా తెల్ల మల్లె హారం.",
+      ur: "روزانہ پوجا، مندر کے چڑھاوے اور تہواروں کے لیے سادہ سفید چنبیلی کا ہار۔",
+    },
+    price: 250,
+    occasions: ["pooja"],
+    types: [],
+    flowers: ["jasmine"],
+    available: true,
+    featured: true,
+  },
+  {
+    id: "marigold-temple",
+    imageBase: "marigold-temple",
+    name: {
+      en: "Marigold Temple Garland",
+      hi: "गेंदा मंदिर माला",
+      te: "బంతి ఆలయ హారం",
+      ur: "گیندا مندر ہار",
+    },
+    description: {
+      en: "Thick orange and yellow marigold garland for deities, vehicles and shop entrances.",
+      hi: "देवी-देवताओं, वाहनों और दुकान के द्वार के लिए मोटी नारंगी और पीली गेंदे की माला।",
+      te: "దేవతలకు, వాహనాలకు, దుకాణ ద్వారాలకు మందపాటి నారింజ, పసుపు బంతిపూల హారం.",
+      ur: "دیوی دیوتاؤں، گاڑیوں اور دکان کے دروازے کے لیے موٹا نارنجی اور پیلا گیندے کا ہار۔",
+    },
+    price: 180,
+    occasions: ["pooja"],
+    types: [],
+    flowers: ["marigold"],
+    available: true,
+    featured: false,
+  },
+  {
+    id: "marigold-toran",
+    imageBase: "marigold-toran",
+    name: {
+      en: "Festive Marigold Door Toran",
+      hi: "त्योहार के लिए गेंदे का द्वार तोरण",
+      te: "పండుగ బంతిపూల ద్వార తోరణం",
+      ur: "تہوار کے لیے گیندے کا دروازے کا توران",
+    },
+    description: {
+      en: "Hanging marigold strings with green leaf tips to welcome guests at the door. Ideal for festivals and housewarming.",
+      hi: "मेहमानों के स्वागत के लिए हरे पत्तों वाली गेंदे की लटकती लड़ियाँ। त्योहार और गृहप्रवेश के लिए उत्तम।",
+      te: "అతిథులకు స్వాగతం పలికేందుకు ఆకుపచ్చ ఆకులతో వేలాడే బంతిపూల తోరణం. పండుగలు, గృహప్రవేశానికి అనువైనది.",
+      ur: "مہمانوں کے استقبال کے لیے سبز پتوں والی لٹکتی گیندے کی لڑیاں۔ تہواروں اور گھر کی رسم کے لیے موزوں۔",
+    },
+    price: 450,
+    occasions: ["pooja", "events", "special"],
+    types: ["toran"],
+    flowers: ["marigold"],
+    available: true,
+    featured: true,
+  },
+  {
+    id: "wedding-car",
+    imageBase: "wedding-car",
+    name: {
+      en: "Wedding Car Decoration",
+      hi: "शादी की कार सजावट",
+      te: "పెళ్లి కారు అలంకరణ",
+      ur: "شادی کی کار کی سجاوٹ",
+    },
+    description: {
+      en: "Flower swags for the bonnet and doors of the wedding car. Made to fit your car. Confirm the design on WhatsApp.",
+      hi: "शादी की कार के बोनट और दरवाज़ों के लिए फूलों की लड़ियाँ। आपकी कार के हिसाब से बनाई जाती हैं। डिज़ाइन WhatsApp पर तय करें।",
+      te: "పెళ్లి కారు బానెట్, డోర్ల కోసం పూల అలంకరణ. మీ కారుకు తగినట్టు తయారు చేస్తాము. డిజైన్ WhatsApp లో నిర్ధారించండి.",
+      ur: "شادی کی کار کے بونٹ اور دروازوں کے لیے پھولوں کی لڑیاں۔ آپ کی کار کے مطابق بنائی جاتی ہیں۔ ڈیزائن واٹس ایپ پر طے کریں۔",
+    },
+    price: 2999,
+    occasions: ["wedding", "events"],
+    types: ["car"],
+    flowers: ["rose", "jasmine"],
+    available: true,
+    featured: false,
+  },
+  {
+    id: "stage-backdrop",
+    imageBase: "stage-backdrop",
+    name: {
+      en: "Flower Curtain Stage Backdrop",
+      hi: "फूलों के पर्दे वाला स्टेज बैकड्रॉप",
+      te: "పూల తెర స్టేజ్ బ్యాక్‌డ్రాప్",
+      ur: "پھولوں کے پردے والا اسٹیج بیک ڈراپ",
+    },
+    description: {
+      en: "Hanging strings of roses, jasmine and marigold for the stage or photo backdrop. Size is made to your stage.",
+      hi: "स्टेज या फोटो बैकड्रॉप के लिए गुलाब, चमेली और गेंदे की लटकती लड़ियाँ। आपके स्टेज के नाप से बनाई जाती हैं।",
+      te: "స్టేజ్ లేదా ఫోటో బ్యాక్‌డ్రాప్ కోసం గులాబీ, మల్లె, బంతిపూల వేలాడే పూల మాలలు. మీ స్టేజ్ కొలతలకు తగినట్టు తయారు చేస్తాము.",
+      ur: "اسٹیج یا فوٹو بیک ڈراپ کے لیے گلاب، چنبیلی اور گیندے کی لٹکتی لڑیاں۔ آپ کے اسٹیج کے ناپ کے مطابق بنائی جاتی ہیں۔",
+    },
+    price: 6999,
+    occasions: ["wedding", "events", "special"],
+    types: ["stage"],
+    flowers: ["rose", "jasmine", "marigold"],
+    available: true,
+    featured: true,
+  },
+  {
+    id: "birthday-mix",
+    imageBase: "birthday-mix",
+    name: {
+      en: "Birthday Party Rose Garland",
+      hi: "जन्मदिन पार्टी गुलाब माला",
+      te: "పుట్టినరోజు పార్టీ గులాబీ హారం",
+      ur: "سالگرہ پارٹی گلاب ہار",
+    },
+    description: {
+      en: "A cheerful pink, peach and yellow garland for birthdays, anniversaries and small celebrations.",
+      hi: "जन्मदिन, सालगिरह और छोटे उत्सवों के लिए गुलाबी, पीच और पीले रंगों की खुशनुमा माला।",
+      te: "పుట్టినరోజులు, వార్షికోత్సవాలు, చిన్న వేడుకల కోసం గులాబీ, పీచ్, పసుపు రంగుల ఉల్లాసమైన హారం.",
+      ur: "سالگرہ، شادی کی سالگرہ اور چھوٹی تقریبات کے لیے گلابی، پیچ اور پیلے رنگوں کا خوشنما ہار۔",
+    },
+    price: 899,
+    occasions: ["events", "special"],
+    types: [],
+    flowers: ["rose", "marigold", "jasmine"],
+    available: false,
+    featured: false,
+  },
+  {
+    id: "orchid-designer",
+    imageBase: "orchid-designer",
+    name: {
+      en: "Orchid Designer Garland",
+      hi: "ऑर्किड डिज़ाइनर माला",
+      te: "ఆర్కిడ్ డిజైనర్ హారం",
+      ur: "آرکڈ ڈیزائنر ہار",
+    },
+    description: {
+      en: "A premium designer garland with purple and white orchids. Colours and length can be customised.",
+      hi: "बैंगनी और सफ़ेद ऑर्किड से बनी प्रीमियम डिज़ाइनर माला। रंग और लंबाई अपनी पसंद से बनवा सकते हैं।",
+      te: "ఊదా, తెలుపు ఆర్కిడ్లతో చేసిన ప్రీమియం డిజైనర్ హారం. రంగులు, పొడవు మీ ఇష్టం ప్రకారం మార్చుకోవచ్చు.",
+      ur: "جامنی اور سفید آرکڈ سے بنا پریمیم ڈیزائنر ہار۔ رنگ اور لمبائی اپنی پسند سے بنوائی جا سکتی ہے۔",
+    },
+    price: 2499,
+    occasions: ["custom", "special"],
+    types: [],
+    flowers: ["orchid", "jasmine"],
+    available: true,
+    featured: true,
+  },
+];
+
+export const SEED_PRODUCTS: Product[] = seeds.map(({ imageBase, ...rest }, i) => {
+  // Earlier items get a later date so they sort first (newest first).
+  const stamp = new Date(Date.UTC(2026, 8, 1) - i * 86_400_000).toISOString();
+  return {
+    ...rest,
+    images: [`/samples/${imageBase}-1.webp`, `/samples/${imageBase}-2.webp`],
+    createdAt: stamp,
+    updatedAt: stamp,
+  };
+});

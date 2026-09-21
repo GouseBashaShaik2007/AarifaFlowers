@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local admin data (photos and edits made while running on this computer)
+/data/products.json
+/data/uploads

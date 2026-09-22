@@ -5,14 +5,15 @@ import CustomerStories from "@/components/CustomerStories";
 import FaqSection from "@/components/FaqSection";
 import FitPhoto from "@/components/FitPhoto";
 import InstagramShowcase from "@/components/InstagramShowcase";
+import JsonLd from "@/components/JsonLd";
 import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { OCCASIONS, isCutout, isLang, thumbOf, tr } from "@/lib/catalog";
 import { getDict } from "@/lib/i18n";
-import { visibleReels } from "@/lib/instagram";
+import { profileUrl, visibleReels } from "@/lib/instagram";
 import { getFaq, getInstagramSettings, getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
 import { getProducts } from "@/lib/publicData";
-import { customMessage, generalMessage, waLink } from "@/lib/whatsapp";
+import { BUSINESS_NAME, SITE_URL, WHATSAPP_DISPLAY, customMessage, generalMessage, waLink } from "@/lib/whatsapp";
 
 const OCCASION_BG: Record<string, string> = {
   wedding: "bg-rose-soft",
@@ -36,7 +37,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
     getSiteSettings(),
   ]);
   const featured = products.filter((p) => p.featured).slice(0, 8);
-  const sets = products.filter((p) => p.types.includes("set")).slice(0, 4);
+  // Sets that are already in Best sellers are not shown twice, so a visitor does not scroll past the same garlands again.
+  const featuredIds = new Set(featured.map((p) => p.id));
+  const sets = products.filter((p) => p.types.includes("set") && !featuredIds.has(p.id)).slice(0, 4);
   const reviews = allReviews.slice(0, 6);
   const leadTime = tr(settings.leadTime, lang);
   const heroPics = (featured.length ? featured : products).filter((p) => p.images[0]).slice(0, 3);
@@ -49,6 +52,20 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 
   return (
     <>
+      {/* Facts about the business for search engines. Nothing is claimed that the owner has not given: no rating, no address. */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Florist",
+          name: BUSINESS_NAME,
+          url: `${SITE_URL}/${lang}`,
+          telephone: WHATSAPP_DISPLAY,
+          image: `${SITE_URL}/icons/icon-512.png`,
+          description: t.siteDescription,
+          sameAs: [profileUrl(instagram.handle)],
+        }}
+      />
+
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#fff0df] via-cream to-[#ffe3ec]">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:px-6 md:grid-cols-2 md:py-16">
@@ -149,7 +166,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
       {/* Featured */}
       {featured.length > 0 && (
         <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6">
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
             <h2 className="h-display text-3xl font-semibold text-ink sm:text-4xl">{t.featured}</h2>
             <Link
               href={`/${lang}/garlands`}
@@ -172,7 +189,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
       {/* Sets and combos */}
       {sets.length > 0 && (
         <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6">
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
             <h2 className="h-display text-3xl font-semibold text-ink sm:text-4xl">🎁 {t.setsTitle}</h2>
             <Link
               href={`/${lang}/garlands?type=set`}

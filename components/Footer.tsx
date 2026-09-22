@@ -4,6 +4,9 @@ import { getDict } from "@/lib/i18n";
 import { BUSINESS_NAME, WHATSAPP_DISPLAY, WHATSAPP_NUMBER, generalMessage, waLink } from "@/lib/whatsapp";
 import { FlowerLogo, WhatsAppIcon } from "./icons";
 
+/** A footer link with a tap area of 44 pixels, which is what a thumb needs. */
+const LINK = "flex min-h-11 items-center hover:text-rose";
+
 export default function Footer({ lang, delivery }: { lang: Lang; delivery: string }) {
   const t = getDict(lang);
   return (
@@ -20,24 +23,24 @@ export default function Footer({ lang, delivery }: { lang: Lang; delivery: strin
         </div>
         <div>
           <h2 className="text-sm font-semibold uppercase tracking-wide text-ink">{t.navGarlands}</h2>
-          <ul className="mt-3 space-y-2 text-sm text-muted">
+          <ul className="mt-2 text-sm text-muted">
             <li>
-              <Link className="hover:text-rose" href={`/${lang}`}>
+              <Link className={LINK} href={`/${lang}`}>
                 {t.navHome}
               </Link>
             </li>
             <li>
-              <Link className="hover:text-rose" href={`/${lang}/garlands`}>
+              <Link className={LINK} href={`/${lang}/garlands`}>
                 {t.allGarlands}
               </Link>
             </li>
             <li>
-              <Link className="hover:text-rose" href={`/${lang}/custom`}>
+              <Link className={LINK} href={`/${lang}/custom`}>
                 {t.builderCta}
               </Link>
             </li>
             <li>
-              <Link className="hover:text-rose" href={`/${lang}/saved`}>
+              <Link className={LINK} href={`/${lang}/saved`}>
                 {t.savedTitle}
               </Link>
             </li>
@@ -49,7 +52,7 @@ export default function Footer({ lang, delivery }: { lang: Lang; delivery: strin
             href={waLink(generalMessage)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-wa hover:text-wa-deep"
+            className="mt-1 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-wa hover:text-wa-deep"
           >
             <WhatsAppIcon />
             <bdi>{WHATSAPP_DISPLAY}</bdi>
@@ -63,7 +66,7 @@ export default function Footer({ lang, delivery }: { lang: Lang; delivery: strin
           <span className="sr-only">{WHATSAPP_NUMBER}</span>
         </div>
       </div>
-      <div className="border-t border-line py-4 text-center text-xs text-muted">
+      <div className="border-t border-line py-4 text-center text-[13px] text-muted">
         © {new Date().getFullYear()} {BUSINESS_NAME}. {t.rights}.
       </div>
     </footer>

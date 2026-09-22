@@ -57,6 +57,16 @@ export function assessDate(ymd: string, days: Notice, now: Date = new Date()): D
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+/**
+ * Whether today falls between two days, both included. A missing or badly written day means no limit on that side.
+ * All three are yyyy-mm-dd, which sort the same way as the dates they stand for.
+ */
+export function withinDates(today: string, from?: string, until?: string): boolean {
+  if (from && YMD.test(from) && today < from) return false;
+  if (until && YMD.test(until) && today > until) return false;
+  return true;
+}
+
 /** "12 Nov 2026" for the WhatsApp message. Spelled out here so every browser writes the same thing. */
 export function formatDate(ymd: string): string {
   if (!YMD.test(ymd)) return "";

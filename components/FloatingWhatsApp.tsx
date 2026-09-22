@@ -26,6 +26,8 @@ export default function FloatingWhatsApp({ href, label }: { href: string; label:
   }, [isHome]);
 
   if (/^\/(en|hi|te|ur)\/garlands\/[^/]+/.test(pathname)) return null;
+  // The list already has an Order button on every card, and the circle floated over them as you scrolled.
+  if (/^\/(en|hi|te|ur)\/garlands\/?$/.test(pathname)) return null;
   const hidden = isHome && !scrolled;
 
   return (
@@ -37,7 +39,7 @@ export default function FloatingWhatsApp({ href, label }: { href: string; label:
       aria-hidden={hidden}
       tabIndex={hidden ? -1 : undefined}
       onClick={() => trackTap("general")}
-      className={`fixed bottom-4 end-4 z-40 flex items-center gap-2 rounded-full bg-wa px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgba(21,128,61,0.8)] transition duration-300 hover:bg-wa-deep active:scale-95 sm:px-5 ${
+      className={`fixed bottom-[max(1rem,env(safe-area-inset-bottom))] end-4 z-40 flex items-center gap-2 rounded-full bg-wa px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_-8px_rgba(21,128,61,0.8)] transition duration-300 hover:bg-wa-deep active:scale-95 sm:px-5 ${
         hidden ? "pointer-events-none translate-y-4 opacity-0" : "translate-y-0 opacity-100"
       }`}
     >

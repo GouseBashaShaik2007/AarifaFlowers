@@ -27,6 +27,8 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   const saved = (await loadDocs())[SETTINGS_KEY] as Partial<SiteSettings> | undefined;
   return {
     announcementEnabled: saved?.announcementEnabled ?? DEFAULT_SETTINGS.announcementEnabled,
+    announcementFrom: saved?.announcementFrom,
+    announcementUntil: saved?.announcementUntil,
     announcement: saved?.announcement ?? DEFAULT_SETTINGS.announcement,
     delivery: saved?.delivery ?? DEFAULT_SETTINGS.delivery,
     leadTime: saved?.leadTime ?? DEFAULT_SETTINGS.leadTime,

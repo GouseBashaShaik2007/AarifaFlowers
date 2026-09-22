@@ -5,6 +5,7 @@ import { saveSettingsAction } from "@/app/(admin)/admin/actions";
 import { LANGS, LANG_LABEL, isRtl, tr, type Lang } from "@/lib/catalog";
 import type { SiteSettings } from "@/lib/content";
 import AnnouncementBar from "@/components/AnnouncementBar";
+import { indiaNow, withinDates } from "@/lib/orderRules";
 
 type FieldKey = "announcement" | "delivery" | "leadTime";
 
@@ -123,6 +124,41 @@ export default function SettingsForm({ initial, defaults }: { initial: SiteSetti
               </span>
             </button>
           )}
+          {f.key === "announcement" && (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="announcement-from" className="mb-1.5 block text-sm font-medium text-ink">
+                  Show from <span className="font-normal text-muted">optional</span>
+                </label>
+                <input
+                  id="announcement-from"
+                  type="date"
+                  value={values.announcementFrom ?? ""}
+                  onChange={(e) => setValues((v) => ({ ...v, announcementFrom: e.target.value || undefined }))}
+                  className={`${area} min-h-12`}
+                />
+              </div>
+              <div>
+                <label htmlFor="announcement-until" className="mb-1.5 block text-sm font-medium text-ink">
+                  Show until <span className="font-normal text-muted">optional</span>
+                </label>
+                <input
+                  id="announcement-until"
+                  type="date"
+                  value={values.announcementUntil ?? ""}
+                  onChange={(e) => setValues((v) => ({ ...v, announcementUntil: e.target.value || undefined }))}
+                  className={`${area} min-h-12`}
+                />
+              </div>
+              <p className="text-xs text-muted sm:col-span-2">
+                For a festival banner, choose the first and last day. Both days are included. Leave both empty to show the bar
+                all the time.
+                {(values.announcementFrom || values.announcementUntil) &&
+                  !withinDates(indiaNow().ymd, values.announcementFrom, values.announcementUntil) &&
+                  " Today is outside these days, so the bar is hidden right now."}
+              </p>
+            </div>
+          )}
           <textarea
             aria-label={`${f.title} in ${LANG_LABEL[tab]}`}
             rows={f.rows}
@@ -150,6 +186,9 @@ export default function SettingsForm({ initial, defaults }: { initial: SiteSetti
                   {values.announcementEnabled ? "The bar is hidden because the text is empty." : "The bar is switched off."}
                 </p>
               )}
+              <p className="border-t border-line bg-cream px-3 py-1 text-xs text-muted" dir="ltr">
+                The preview ignores the dates above. The website follows them.
+              </p>
             </div>
           )}
         </section>

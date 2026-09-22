@@ -118,6 +118,15 @@ export const en = {
   builderCta: "Design your garland",
   customPhoto: "Send a reference photo on WhatsApp",
   faqTitle: "Questions? We have answers",
+  orderShort: "Order",
+  searchPlaceholder: "Search garlands",
+  searchButton: "Search",
+  sortLabel: "Sort by",
+  sortNewest: "Newest",
+  sortPriceLow: "Price: low to high",
+  sortPriceHigh: "Price: high to low",
+  shareGarland: "Share",
+  shareText: "Take a look at this garland from Aarifa Flowers:",
 };
 
 type Dict = typeof en;
@@ -240,6 +249,15 @@ const hi: Dict = {
   builderCta: "अपनी माला डिज़ाइन करें",
   customPhoto: "WhatsApp पर संदर्भ फोटो भेजें",
   faqTitle: "सवाल? हमारे पास जवाब हैं",
+  orderShort: "ऑर्डर",
+  searchPlaceholder: "मालाएँ खोजें",
+  searchButton: "खोजें",
+  sortLabel: "क्रमबद्ध करें",
+  sortNewest: "सबसे नई",
+  sortPriceLow: "कीमत: कम से ज़्यादा",
+  sortPriceHigh: "कीमत: ज़्यादा से कम",
+  shareGarland: "शेयर करें",
+  shareText: "Aarifa Flowers की यह माला देखें:",
 };
 
 const te: Dict = {
@@ -360,6 +378,15 @@ const te: Dict = {
   builderCta: "మీ హారాన్ని డిజైన్ చేయండి",
   customPhoto: "WhatsApp లో రిఫరెన్స్ ఫోటో పంపండి",
   faqTitle: "ప్రశ్నలా? మా దగ్గర సమాధానాలున్నాయి",
+  orderShort: "ఆర్డర్",
+  searchPlaceholder: "హారాలను వెతకండి",
+  searchButton: "వెతకండి",
+  sortLabel: "క్రమం",
+  sortNewest: "కొత్తవి",
+  sortPriceLow: "ధర: తక్కువ నుండి ఎక్కువ",
+  sortPriceHigh: "ధర: ఎక్కువ నుండి తక్కువ",
+  shareGarland: "షేర్ చేయండి",
+  shareText: "Aarifa Flowers నుండి ఈ హారాన్ని చూడండి:",
 };
 
 const ur: Dict = {
@@ -480,6 +507,15 @@ const ur: Dict = {
   builderCta: "اپنا ہار ڈیزائن کریں",
   customPhoto: "واٹس ایپ پر حوالے کی تصویر بھیجیں",
   faqTitle: "سوالات؟ ہمارے پاس جوابات ہیں",
+  orderShort: "آرڈر",
+  searchPlaceholder: "ہار تلاش کریں",
+  searchButton: "تلاش کریں",
+  sortLabel: "ترتیب",
+  sortNewest: "نئے",
+  sortPriceLow: "قیمت: کم سے زیادہ",
+  sortPriceHigh: "قیمت: زیادہ سے کم",
+  shareGarland: "شیئر کریں",
+  shareText: "Aarifa Flowers کا یہ ہار دیکھیں:",
 };
 
 export const dictionaries: Record<Lang, Dict> = { en, hi, te, ur };

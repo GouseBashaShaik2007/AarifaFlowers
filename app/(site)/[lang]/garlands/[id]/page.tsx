@@ -4,14 +4,17 @@ import { notFound } from "next/navigation";
 import Gallery from "@/components/Gallery";
 import GarlandOrder from "@/components/GarlandOrder";
 import { ArrowIcon } from "@/components/icons";
+import JsonLd from "@/components/JsonLd";
 import PriceLabel from "@/components/PriceLabel";
 import ProductCard from "@/components/ProductCard";
 import SaveButton from "@/components/SaveButton";
+import ShareButton from "@/components/ShareButton";
 import { FLOWERS, OCCASIONS, TYPES, isLang, label, tr } from "@/lib/catalog";
 import { MAX_SAVED } from "@/lib/savedLimit";
 import { fmt, getDict } from "@/lib/i18n";
 import { getSiteSettings } from "@/lib/siteContent";
 import { getProductById, getProducts } from "@/lib/publicData";
+import { BUSINESS_NAME, SITE_URL } from "@/lib/whatsapp";
 
 const loadProduct = getProductById;
 
@@ -53,8 +56,34 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
     ...product.types.map((o) => label(TYPES, o, lang)),
   ];
 
+  // Facts about this garland for search engines. It states only what the owner entered: the starting price or range,
+  // and "in stock" only when the garland is marked Fresh Today. There is no rating, because none has been published.
+  const pageUrl = `${SITE_URL}/${lang}/garlands/${product.id}`;
+  const absolute = (u: string) => (u.startsWith("http") ? u : `${SITE_URL}${u}`);
+  const hasRange = Boolean(product.maxPrice && product.maxPrice > product.price);
+  const productFacts = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name,
+    description: description || t.siteDescription,
+    sku: product.id,
+    url: pageUrl,
+    brand: { "@type": "Brand", name: BUSINESS_NAME },
+    ...(product.images.length > 0 ? { image: product.images.map(absolute) } : {}),
+    offers: hasRange
+      ? { "@type": "AggregateOffer", priceCurrency: "INR", lowPrice: product.price, highPrice: product.maxPrice, offerCount: 1, url: pageUrl }
+      : {
+          "@type": "Offer",
+          priceCurrency: "INR",
+          price: product.price,
+          url: pageUrl,
+          ...(product.available ? { availability: "https://schema.org/InStock" } : {}),
+        },
+  };
+
   return (
     <div className="pb-24 md:pb-0">
+      <JsonLd data={productFacts} />
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
         <Link
           href={`/${lang}/garlands`}
@@ -70,22 +99,25 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
           <div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <span
-                className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                className={`inline-block rounded-full px-3 py-1 text-[13px] font-semibold ${
                   product.available ? "bg-leaf text-white" : "bg-line text-muted"
                 }`}
               >
                 {product.available ? `🌿 ${t.freshToday}` : t.unavailable}
               </span>
-              <SaveButton
-                id={product.id}
-                variant="pill"
-                labels={{
-                  save: t.saveGarland,
-                  unsave: t.unsaveGarland,
-                  full: fmt(t.savedFull, { n: MAX_SAVED }),
-                  added: t.savedAdded,
-                }}
-              />
+              <div className="flex flex-wrap items-center gap-2">
+                <ShareButton label={t.shareGarland} title={name} text={t.shareText} />
+                <SaveButton
+                  id={product.id}
+                  variant="pill"
+                  labels={{
+                    save: t.saveGarland,
+                    unsave: t.unsaveGarland,
+                    full: fmt(t.savedFull, { n: MAX_SAVED }),
+                    added: t.savedAdded,
+                  }}
+                />
+              </div>
             </div>
             <h1 className="h-display mt-3 text-3xl font-semibold text-ink sm:text-4xl">{name}</h1>
             <PriceLabel t={t} price={product.price} maxPrice={product.maxPrice} className="mt-3 block text-2xl text-rose-deep" />

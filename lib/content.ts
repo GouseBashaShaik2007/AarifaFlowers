@@ -6,6 +6,12 @@ import type { Text } from "./catalog";
 export type SiteSettings = {
   /** Whether the bar shows at all. On by default. Switching it off keeps the text for later. */
   announcementEnabled: boolean;
+  /**
+   * Optional first and last day the bar is shown, as yyyy-mm-dd in India time. Both days are included.
+   * Empty means no limit on that side. This is for festival banners that should appear and disappear by themselves.
+   */
+  announcementFrom?: string;
+  announcementUntil?: string;
   /** The thin bar at the top of every page. Leave empty to hide the bar. */
   announcement: Text;
   /** Delivery rules. Shown in the footer and on each garland page. */

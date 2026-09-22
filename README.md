@@ -105,6 +105,19 @@ To try the site the way Cloudflare runs it, copy `.env.local` to `.dev.vars` and
 - **Admin:** the garland list and the tap counts load together.
 - **What would help next:** each page still waits for one round trip to Supabase, and its length depends on how far the Supabase project is from the visitor. Look at the project's region in Supabase (Project Settings, Infrastructure). If it is far from your customers, a project in the Mumbai region would shorten every visit. That means creating a new project there and moving the data, so it is worth doing only with care. A short cache on the server would help more, but it makes changes such as Fresh Today take a little while to show, so it is not switched on.
 
+## Phone experience
+
+- **Header:** it slides away while a visitor scrolls down and comes back as soon as they scroll up (`components/ScrollHeader.tsx`). The filter chips on the garlands page move up into the free space and back. On a very narrow screen the language button shows only the globe, so nothing runs off the edge.
+- **Garlands list:** a search box (every word must match a name, flower, occasion or type in any language), a sort menu (newest, price low to high, price high to low), and a soft fade at the edge of the chips that shows there are more to swipe. Names now use up to three lines. The card button says **Order** to fit a half-width card, with the full words kept for screen readers. The floating WhatsApp circle is hidden here, because every card has its own button. It stays on the home page.
+- **Garland page:** the order bar no longer covers the end of the footer, and it keeps clear of the iPhone home indicator. There is a **Share** button (the phone's share sheet, or WhatsApp where there is none) and photos can be swiped, with dots showing how many there are.
+- **Design your garland:** a tap on an occasion or a length moves to the next step by itself. The first step has a Back link to the home page.
+- **Home page:** Sets and combos no longer repeat garlands already shown in Best sellers.
+- **Size of things:** text on buttons and badges is at least 13 to 14 px, and footer links are 44 px tall.
+- **Home screen and Google:** the site has a manifest and icons, so it can be added to a phone's home screen. It also gives search engines facts about the business (name, phone, Instagram) and about each garland (name, photos, starting price or price range, and in stock only while Fresh Today is on). It states no rating and no address, because none has been entered.
+- **Announcement dates** (admin, Announcements tab): optional **Show from** and **Show until** days for festival banners. Both days are included, and the bar follows India time. Leave both empty to show it all the time.
+- **Instagram reels:** the official embed makes each reel a tall box. The **Instagram, tap to play** choice in the admin Instagram tab shows a swipeable strip instead. That is a setting in the admin page, saved there.
+- **Not built yet:** a delivery area and fee check, opening hours with an "Open now" line, and customer reviews. They need your real delivery areas and fees, your working hours and your real reviews.
+
 ## Custom builder, event date check, saved garlands and FAQ
 
 - **Design your garland** (`/en/custom`): six short steps for occasion, flowers, colours, length, event date, then budget and notes. It ends with a summary and a green Send my design on WhatsApp button. Every step except the occasion can be skipped, and skipped answers say "Not decided, please suggest" in the message. The message is always English. The flowers come from the flower list in `lib/catalog.ts`. The colours and lengths are in `lib/builder.ts`. The home page banner links to it, and the tap counter counts it as a custom request.

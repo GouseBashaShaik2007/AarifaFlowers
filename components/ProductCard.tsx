@@ -39,7 +39,7 @@ export default function ProductCard({
           )}
         </Link>
         <span
-          className={`pointer-events-none absolute start-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm ${
+          className={`pointer-events-none absolute start-3 top-3 rounded-full px-2.5 py-1 text-[13px] font-semibold shadow-sm ${
             product.available ? "bg-leaf text-white" : "bg-white/90 text-muted"
           }`}
         >
@@ -57,15 +57,15 @@ export default function ProductCard({
         />
       </div>
       <div className="flex flex-1 flex-col gap-2 p-3.5 sm:p-4">
-        {/* Two lines at the line height of 1.375, so a long name is cut cleanly with no third line peeking out. */}
-        <h3 className="line-clamp-2 min-h-[2.75em] text-[0.95rem] font-semibold leading-snug text-ink">
+        {/* Up to three lines, so a long name is not cut off. The clamp stops a fourth line from peeking out. */}
+        <h3 className="line-clamp-3 min-h-[2.75em] text-[0.95rem] font-semibold leading-snug text-ink">
           <Link href={href} className="hover:text-rose">
             {name}
           </Link>
         </h3>
         <PriceLabel t={t} price={product.price} maxPrice={product.maxPrice} className="text-sm text-rose-deep" />
         {length && (
-          <p className="text-xs">
+          <p className="text-[13px]">
             <span className="inline-block rounded-full bg-rose-soft px-2.5 py-1 font-medium text-rose-deep">
               <span className="sr-only">{t.lengthLabel}: </span>
               📏 {length}
@@ -73,8 +73,9 @@ export default function ProductCard({
           </p>
         )}
         <div className="mt-auto pt-1">
-          <WhatsAppButton href={waLink(productMessage(product))} full track={product.id}>
-            {t.orderWhatsApp}
+          {/* A short word on the card, because the full words wrap to two lines in a half width card. The bar on the garland page keeps the full words. */}
+          <WhatsAppButton href={waLink(productMessage(product))} full track={product.id} ariaLabel={`${t.orderWhatsApp}: ${name}`}>
+            {t.orderShort}
           </WhatsAppButton>
         </div>
       </div>

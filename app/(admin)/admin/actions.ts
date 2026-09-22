@@ -325,6 +325,8 @@ export async function markAllFreshAction(): Promise<ActionResult> {
 
 export async function saveSettingsAction(input: {
   announcementEnabled: boolean;
+  announcementFrom?: string;
+  announcementUntil?: string;
   announcement: Text;
   delivery: Text;
   leadTime: Text;
@@ -332,8 +334,16 @@ export async function saveSettingsAction(input: {
   const denied = await guard();
   if (denied) return denied;
   try {
+    const day = (v: unknown) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "");
+    const from = day(input.announcementFrom);
+    const until = day(input.announcementUntil);
+    if (from && until && until < from) {
+      return { ok: false, error: "The last day cannot be before the first day. Please check the two dates." };
+    }
     await saveSiteSettings({
       announcementEnabled: input.announcementEnabled !== false,
+      ...(from ? { announcementFrom: from } : {}),
+      ...(until ? { announcementUntil: until } : {}),
       announcement: cleanText(input.announcement, 220),
       delivery: cleanText(input.delivery, 500),
       leadTime: cleanText(input.leadTime, 320),

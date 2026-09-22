@@ -11,7 +11,8 @@ export const WHATSAPP_DISPLAY =
 export const BUSINESS_NAME = "Aarifa Flowers";
 
 // The live address. It is baked in at build time, so a default here keeps the link in every order message correct.
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://aarifaflowers.store").replace(/\/$/, "");
+/** The live address of the site, without a closing slash. Used in messages and in the facts given to search engines. */
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://aarifaflowers.store").replace(/\/$/, "");
 
 export function formatPrice(n: number): string {
   return "₹" + Math.round(n).toLocaleString("en-IN");

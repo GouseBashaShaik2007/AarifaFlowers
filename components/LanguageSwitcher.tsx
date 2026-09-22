@@ -53,10 +53,11 @@ export default function LanguageSwitcher({ lang, label }: { lang: Lang; label: s
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={label}
-        className="flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-2 text-sm font-medium text-ink shadow-sm transition hover:border-rose/50"
+        className="flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-white px-3 text-sm font-medium text-ink shadow-sm transition hover:border-rose/50"
       >
         <GlobeIcon />
-        <span>{LANG_LABEL[lang]}</span>
+        {/* On a very narrow screen only the globe is shown, so the header never has to grow. */}
+        <span className="max-[340px]:hidden">{LANG_LABEL[lang]}</span>
         <ChevronIcon className={`h-3.5 w-3.5 transition ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (

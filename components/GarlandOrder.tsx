@@ -31,7 +31,7 @@ export default function GarlandOrder({ product, t }: { product: Product; t: Dict
       </div>
 
       {/* Order bar that stays on screen on phones */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 p-3 backdrop-blur md:hidden">
+      <div className="order-bar fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-6xl items-center gap-3">
           <PriceLabel t={t} price={product.price} maxPrice={product.maxPrice} className="shrink-0 text-sm text-rose-deep" />
           <WhatsAppButton href={href} full className="flex-1" track={product.id}>

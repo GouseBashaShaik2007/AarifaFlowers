@@ -36,6 +36,11 @@ html[lang="ur"] {
   --f-head: var(--font-urdu), var(--font-poppins), system-ui, sans-serif;
 }
 
+/* On a phone held sideways, keep the content clear of the notch. */
+body {
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+}
+
 @theme inline {
   --color-cream: var(--cream);
   --color-cream-deep: var(--cream-deep);
@@ -91,6 +96,13 @@ html[lang="te"] .h-display {
 html[lang="ur"] .h-display {
   line-height: 1.8;
   letter-spacing: 0;
+}
+
+/* On a phone the order bar sits over the bottom of the page. Leave room at the end of the footer so its last lines can be read. */
+@media (max-width: 767px) {
+  body:has(.order-bar) footer {
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  }
 }
 
 /* Soft backdrop so transparent cut-out photos look good. */

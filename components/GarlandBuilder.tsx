@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FLOWERS, OCCASIONS, label, type Lang } from "@/lib/catalog";
 import {
@@ -41,6 +42,23 @@ export default function GarlandBuilder({ lang, t }: { lang: Lang; t: Dictionary 
   const [c, setC] = useState<BuilderChoices>(EMPTY_CHOICES);
   const heading = useRef<HTMLHeadingElement>(null);
   const first = useRef(true);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+
+  /**
+   * On a step with one choice, a tap is the answer, so the builder moves on by itself after a moment. The moment lets
+   * the visitor see their choice light up. Going Back from the next step leaves the choice in place.
+   */
+  const advanceAfterTap = (fromStep: number) => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setStep((s) => (s === fromStep ? fromStep + 1 : s)), 220);
+  };
 
   // After the first step change, move the focus to the new heading so keyboard and screen reader users land on it.
   useEffect(() => {
@@ -133,7 +151,10 @@ export default function GarlandBuilder({ lang, t }: { lang: Lang; t: Dictionary 
                   key={o.id}
                   type="button"
                   aria-pressed={c.occasion === o.id}
-                  onClick={() => set("occasion", o.id)}
+                  onClick={() => {
+                    set("occasion", o.id);
+                    advanceAfterTap(1);
+                  }}
                   className={chip(c.occasion === o.id)}
                 >
                   <span aria-hidden="true">{o.emoji}</span>
@@ -188,7 +209,12 @@ export default function GarlandBuilder({ lang, t }: { lang: Lang; t: Dictionary 
                   key={l.id}
                   type="button"
                   aria-pressed={c.length === l.id}
-                  onClick={() => set("length", c.length === l.id ? "" : l.id)}
+                  onClick={() => {
+                    const removing = c.length === l.id;
+                    set("length", removing ? "" : l.id);
+                    // Tapping the chosen length again clears it, and then the visitor stays to pick another.
+                    if (!removing) advanceAfterTap(4);
+                  }}
                   className={chip(c.length === l.id)}
                 >
                   <span aria-hidden="true">📏</span>
@@ -279,7 +305,14 @@ export default function GarlandBuilder({ lang, t }: { lang: Lang; t: Dictionary 
               {t.back}
             </button>
           ) : (
-            <span />
+            // The first step has nowhere earlier to go, so Back leaves the builder for the home page.
+            <Link
+              href={`/${lang}`}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-line bg-white px-6 text-sm font-semibold text-ink transition hover:border-rose/50"
+            >
+              <ArrowIcon className="h-4 w-4 rotate-180 rtl:rotate-0" />
+              {t.back}
+            </Link>
           )}
 
           {inReview ? (

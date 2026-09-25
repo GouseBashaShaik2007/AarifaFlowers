@@ -5,6 +5,7 @@ import type { Product } from "@/lib/catalog";
 import type { Dictionary } from "@/lib/i18n";
 import { assessDate, noticeDays } from "@/lib/orderRules";
 import { productMessage, waLink } from "@/lib/whatsapp";
+import AskChips from "./AskChips";
 import DateCheck from "./DateCheck";
 import PriceLabel from "./PriceLabel";
 import WhatsAppButton from "./WhatsAppButton";
@@ -16,7 +17,8 @@ import WhatsAppButton from "./WhatsAppButton";
 export default function GarlandOrder({ product, t }: { product: Product; t: Dictionary }) {
   const [date, setDate] = useState("");
   const days = noticeDays(product.occasions, product.types);
-  const href = waLink(productMessage(product, { ymd: date, status: assessDate(date, days) }));
+  const chosen = { ymd: date, status: assessDate(date, days) };
+  const href = waLink(productMessage(product, chosen));
 
   return (
     <>
@@ -29,6 +31,8 @@ export default function GarlandOrder({ product, t }: { product: Product; t: Dict
           {t.orderWhatsApp}
         </WhatsAppButton>
       </div>
+
+      <AskChips product={product} t={t} date={chosen} />
 
       {/* Order bar that stays on screen on phones */}
       <div className="order-bar fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">

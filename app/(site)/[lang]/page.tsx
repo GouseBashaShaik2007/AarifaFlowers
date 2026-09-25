@@ -178,24 +178,26 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         </section>
       )}
 
-      {/* Customer stories. Shown only when at least one is published. */}
-      <CustomerStories reviews={reviews} t={t} />
-
-      {/* How it works */}
+      {/* How it works. Before the customer stories, because a first visit asks "what happens after I tap?" first. */}
       <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6">
         <h2 className="h-display text-3xl font-semibold text-ink sm:text-4xl">{t.howItWorks}</h2>
-        <ol className="mt-6 grid gap-4 md:grid-cols-3">
+        {/* Four narrow columns leave little room beside the number, so on a wide screen it moves above the words. */}
+        <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { title: t.step1Title, text: t.step1Text },
-            { title: t.step2Title, text: t.step2Text },
-            { title: t.step3Title, text: t.step3Text },
+            { emoji: "💐", title: t.step1Title, text: t.step1Text },
+            { emoji: "💬", title: t.step2Title, text: t.step2Text },
+            { emoji: "✅", title: t.step3Title, text: t.step3Text },
+            { emoji: "🚚", title: t.step4Title, text: t.step4Text },
           ].map((s, i) => (
-            <li key={i} className="flex gap-4 rounded-3xl border border-line bg-white p-5">
+            <li key={i} className="flex gap-4 rounded-3xl border border-line bg-white p-5 lg:flex-col lg:gap-3">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-rose text-lg font-semibold text-white">
                 {i + 1}
               </span>
               <div>
-                <h3 className="font-semibold text-ink">{s.title}</h3>
+                <h3 className="font-semibold text-ink">
+                  <span aria-hidden="true">{s.emoji} </span>
+                  {s.title}
+                </h3>
                 <p className="mt-1 text-sm text-muted">{s.text}</p>
               </div>
             </li>
@@ -205,6 +207,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
           <p className="mt-4 rounded-2xl bg-marigold-soft px-4 py-3 text-sm font-medium text-ink">⏱️ {leadTime}</p>
         )}
       </section>
+
+      {/* Customer stories. Shown only when at least one is published. */}
+      <CustomerStories reviews={reviews} t={t} />
 
       {/* Instagram reels */}
       {instagram.enabled && visibleReels(instagram).length > 0 && <InstagramShowcase t={t} settings={instagram} />}

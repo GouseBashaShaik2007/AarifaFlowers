@@ -5,10 +5,23 @@
 
 import { cache } from "react";
 import type { Product } from "./catalog";
-import { listProducts } from "./store";
+import { getTapCounts, listProducts } from "./store";
 
 /** Every garland, newest first. Read once per page view. */
 export const getProducts = cache((): Promise<Product[]> => listProducts());
+
+/**
+ * WhatsApp taps per garland over the last 30 days, behind the "Most popular" order.
+ * It is only asked for when a visitor chooses that order, so the usual page view still makes one request.
+ * Counting is a bonus: if it fails, the list keeps its normal order instead of showing an error.
+ */
+export const getTapTotals = cache(async (): Promise<Record<string, number>> => {
+  try {
+    return await getTapCounts(30);
+  } catch {
+    return {};
+  }
+});
 
 /** One garland, found in the list that the page already has. Null when there is no such garland. */
 export const getProductById = cache(async (id: string): Promise<Product | null> => {

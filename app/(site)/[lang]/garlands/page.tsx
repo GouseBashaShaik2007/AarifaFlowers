@@ -6,15 +6,16 @@ import { SearchIcon } from "@/components/icons";
 import SortSelect from "@/components/SortSelect";
 import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { BUDGETS, type Budget, findBudget, inBudget } from "@/lib/budget";
 import { FLOWERS, LANGS, OCCASIONS, TYPES, isLang, label, type Lang } from "@/lib/catalog";
 import { fmt, getDict } from "@/lib/i18n";
-import { getProducts } from "@/lib/publicData";
-import { customMessage, waLink } from "@/lib/whatsapp";
+import { getProducts, getTapTotals } from "@/lib/publicData";
+import { customMessage, formatPrice, waLink } from "@/lib/whatsapp";
 
-type Search = { occasion?: string; type?: string; fresh?: string; q?: string; sort?: string };
+type Search = { occasion?: string; type?: string; budget?: string; fresh?: string; q?: string; sort?: string };
 
 /** The ways to order the list. Newest first is the normal order and is not written in the address. */
-const SORTS = ["newest", "low", "high"] as const;
+const SORTS = ["newest", "popular", "low", "high"] as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -26,6 +27,7 @@ function href(lang: Lang, q: Search) {
   const sp = new URLSearchParams();
   if (q.occasion) sp.set("occasion", q.occasion);
   if (q.type) sp.set("type", q.type);
+  if (q.budget) sp.set("budget", q.budget);
   if (q.fresh) sp.set("fresh", "1");
   if (q.q) sp.set("q", q.q);
   if (q.sort) sp.set("sort", q.sort);
@@ -64,14 +66,20 @@ export default async function GarlandsPage({
 
   const occasion = OCCASIONS.some((o) => o.id === sp.occasion) ? sp.occasion : undefined;
   const type = TYPES.some((o) => o.id === sp.type) ? sp.type : undefined;
+  const band = findBudget(sp.budget);
+  const budget = band?.id;
   const fresh = sp.fresh === "1" ? "1" : undefined;
   // What the visitor typed in the search box. Every word has to match somewhere in the garland's details.
   const q = typeof sp.q === "string" ? sp.q.trim().slice(0, 60) : "";
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-  const sort = sp.sort === "low" || sp.sort === "high" ? sp.sort : undefined;
-  const current: Search = { occasion, type, fresh, q: q || undefined, sort };
+  const sort = (SORTS as readonly string[]).includes(sp.sort ?? "") && sp.sort !== "newest" ? sp.sort : undefined;
+  const current: Search = { occasion, type, budget, fresh, q: q || undefined, sort };
 
-  const all = await getProducts();
+  // The tap counts are only worth a request when the visitor actually asked for the most popular first.
+  const [all, taps] = await Promise.all([
+    getProducts(),
+    sort === "popular" ? getTapTotals() : Promise.resolve<Record<string, number>>({}),
+  ]);
   const searchable = (p: (typeof all)[number]) =>
     [
       ...LANGS.map((l) => p.name[l] ?? ""),
@@ -87,11 +95,28 @@ export default async function GarlandsPage({
     (p) =>
       (!occasion || p.occasions.includes(occasion as never)) &&
       (!type || p.types.includes(type as never)) &&
+      (!band || inBudget(band, p.price, p.maxPrice)) &&
       (!fresh || p.available) &&
       (words.length === 0 || words.every((w) => searchable(p).includes(w))),
   );
-  const shown = sort === "low" ? [...matching].sort((a, b) => a.price - b.price) : sort === "high" ? [...matching].sort((a, b) => b.price - a.price) : matching;
-  const hasFilters = Boolean(occasion || type || fresh || q);
+  // Sorting keeps the order of equals, so garlands with the same price or the same number of taps stay newest first.
+  const shown =
+    sort === "low"
+      ? [...matching].sort((a, b) => a.price - b.price)
+      : sort === "high"
+        ? [...matching].sort((a, b) => b.price - a.price)
+        : sort === "popular"
+          ? [...matching].sort((a, b) => (taps[b.id] ?? 0) - (taps[a.id] ?? 0))
+          : matching;
+  const hasFilters = Boolean(occasion || type || budget || fresh || q);
+
+  /** "Under ₹1,000", "₹1,000 – ₹3,000", "₹3,000 and above" — written from the band itself. */
+  const budgetText = (b: Budget) =>
+    b.max === undefined
+      ? fmt(t.budgetOver, { price: formatPrice(b.min) })
+      : b.min === 0
+        ? fmt(t.budgetUnder, { price: formatPrice(b.max) })
+        : fmt(t.budgetBetween, { from: formatPrice(b.min), to: formatPrice(b.max) });
 
   return (
     <div>
@@ -102,6 +127,7 @@ export default async function GarlandsPage({
         <form action={`/${lang}/garlands`} method="get" role="search" className="mt-5 flex gap-2">
           {occasion && <input type="hidden" name="occasion" value={occasion} />}
           {type && <input type="hidden" name="type" value={type} />}
+          {budget && <input type="hidden" name="budget" value={budget} />}
           {fresh && <input type="hidden" name="fresh" value="1" />}
           {sort && <input type="hidden" name="sort" value={sort} />}
           <div className="relative min-w-0 flex-1">
@@ -129,7 +155,7 @@ export default async function GarlandsPage({
       {/* Stays under the header while the list scrolls, so you can switch occasion from anywhere in the list. */}
       <FilterBar
           label={t.filters}
-          activeCount={[type, fresh].filter(Boolean).length}
+          activeCount={[type, budget, fresh].filter(Boolean).length}
           primary={
             <>
               <Chip to={href(lang, { ...current, occasion: undefined })} active={!occasion}>
@@ -157,6 +183,19 @@ export default async function GarlandsPage({
                   ))}
                 </div>
               </div>
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{t.filterBudget}</p>
+                <div className="flex flex-wrap gap-2">
+                  <Chip to={href(lang, { ...current, budget: undefined })} active={!budget}>
+                    {t.all}
+                  </Chip>
+                  {BUDGETS.map((b) => (
+                    <Chip key={b.id} to={href(lang, { ...current, budget: b.id })} active={budget === b.id}>
+                      {budgetText(b)}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Chip to={href(lang, { ...current, fresh: fresh ? undefined : "1" })} active={Boolean(fresh)}>
                   🌿 {t.freshOnly}
@@ -180,7 +219,14 @@ export default async function GarlandsPage({
               value={sort ?? "newest"}
               options={SORTS.map((s) => ({
                 value: s,
-                label: s === "low" ? t.sortPriceLow : s === "high" ? t.sortPriceHigh : t.sortNewest,
+                label:
+                  s === "low"
+                    ? t.sortPriceLow
+                    : s === "high"
+                      ? t.sortPriceHigh
+                      : s === "popular"
+                        ? t.sortPopular
+                        : t.sortNewest,
                 href: href(lang, { ...current, sort: s === "newest" ? undefined : s }),
               }))}
             />

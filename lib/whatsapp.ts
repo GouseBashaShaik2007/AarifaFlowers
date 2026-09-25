@@ -50,6 +50,25 @@ export function productMessage(p: Product, date?: { ymd: string; status: DateSta
   return lines.join("\n");
 }
 
+/**
+ * The short questions a visitor can send when they are not ready to order yet.
+ * Each one names the garland, so the owner always knows what the question is about.
+ */
+export type AskKind = "price" | "date" | "delivery";
+
+const ASK_LINE: Record<AskKind, string> = {
+  price: "Please tell me the final price for this garland.",
+  date: "Is this garland available for my event date?",
+  delivery: "Do you deliver to my area, and what is the delivery charge?",
+};
+
+export function askMessage(p: Product, kind: AskKind, date?: { ymd: string; status: DateStatus | null }): string {
+  const lines = [`Hi ${BUSINESS_NAME},`, "", ASK_LINE[kind], "", `Product: ${tr(p.name, "en")}`];
+  if (kind === "date" && date) lines.push(...dateLines(date.ymd, date.status));
+  if (SITE_URL) lines.push(`Link: ${SITE_URL}/en/garlands/${p.id}`);
+  return lines.join("\n");
+}
+
 /** Several saved garlands in one message. */
 export function savedMessage(products: Product[]): string {
   const lines = [`Hi ${BUSINESS_NAME},`, "", "I am interested in these garlands:", ""];

@@ -10,6 +10,7 @@ import { BUDGETS, type Budget, findBudget, inBudget } from "@/lib/budget";
 import { FLOWERS, LANGS, OCCASIONS, TYPES, isLang, label, type Lang } from "@/lib/catalog";
 import { fmt, getDict } from "@/lib/i18n";
 import { getProducts, getTapTotals } from "@/lib/publicData";
+import { langAlternates } from "@/lib/seo";
 import { customMessage, formatPrice, waLink } from "@/lib/whatsapp";
 
 type Search = { occasion?: string; type?: string; budget?: string; fresh?: string; q?: string; sort?: string };
@@ -17,10 +18,23 @@ type Search = { occasion?: string; type?: string; budget?: string; fresh?: strin
 /** The ways to order the list. Newest first is the normal order and is not written in the address. */
 const SORTS = ["newest", "popular", "low", "high"] as const;
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ lang: string }>;
+  searchParams: Promise<Search>;
+}): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return {};
-  return { title: getDict(lang).allGarlands };
+  const sp = await searchParams;
+  // A filtered or sorted list is the same garlands again in a different order. Only the plain list is offered to
+  // search engines, so the occasion pages are what shows up instead of a dozen near-identical addresses.
+  const filtered = Boolean(sp.occasion || sp.type || sp.budget || sp.fresh || sp.q || sp.sort);
+  return {
+    title: getDict(lang).allGarlands,
+    ...(filtered ? { robots: { index: false, follow: true } } : { alternates: langAlternates(lang, "/garlands") }),
+  };
 }
 
 function href(lang: Lang, q: Search) {

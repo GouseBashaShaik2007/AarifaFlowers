@@ -13,6 +13,7 @@ import TryOnButton from "@/components/tryon/TryOnButton";
 import { FLOWERS, OCCASIONS, TYPES, isLang, label, tr } from "@/lib/catalog";
 import { MAX_SAVED } from "@/lib/savedLimit";
 import { fmt, getDict } from "@/lib/i18n";
+import { langAlternates } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/siteContent";
 import { canTryOn } from "@/lib/tryon";
 import { getProductById, getProducts } from "@/lib/publicData";
@@ -28,6 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   return {
     title: tr(p.name, lang),
     description: tr(p.description, lang) || getDict(lang).siteDescription,
+    alternates: langAlternates(lang, `/garlands/${p.id}`),
     openGraph: { images: p.images[0] ? [p.images[0]] : undefined },
   };
 }

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowIcon } from "@/components/icons";
@@ -9,11 +10,13 @@ import JsonLd from "@/components/JsonLd";
 import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { OCCASIONS, isCutout, isLang, thumbOf, tr } from "@/lib/catalog";
+import { faqFacts } from "@/lib/faq";
 import { pickHeroCandidates } from "@/lib/hero";
 import { getDict } from "@/lib/i18n";
 import { profileUrl, visibleReels } from "@/lib/instagram";
 import { getFaq, getHeroSettings, getInstagramSettings, getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
 import { getProducts } from "@/lib/publicData";
+import { langAlternates } from "@/lib/seo";
 import { BUSINESS_NAME, SITE_URL, WHATSAPP_DISPLAY, customMessage, generalMessage, waLink } from "@/lib/whatsapp";
 
 const OCCASION_BG: Record<string, string> = {
@@ -23,6 +26,12 @@ const OCCASION_BG: Record<string, string> = {
   special: "bg-mint-soft",
   custom: "bg-peach-soft",
 };
+
+/** The title and description come from the layout. This only adds which address is the real one, per language. */
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  return isLang(lang) ? { alternates: langAlternates(lang) } : {};
+}
 
 export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
@@ -44,6 +53,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const sets = products.filter((p) => p.types.includes("set") && !featuredIds.has(p.id)).slice(0, 4);
   const reviews = allReviews.slice(0, 6);
   const leadTime = tr(settings.leadTime, lang);
+  const faqSchema = faq.enabled ? faqFacts(faq.items, lang) : null;
   // The owner's picks, then the newest Featured garlands fill any empty slots, so the hero is never blank.
   const heroPics: HeroPic[] = pickHeroCandidates(
     hero.productIds,
@@ -71,6 +81,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
           sameAs: [profileUrl(instagram.handle)],
         }}
       />
+
+      {/* The questions and answers, so Google can show them straight in the search results. */}
+      {faqSchema && <JsonLd data={faqSchema} />}
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#fff0df] via-cream to-[#ffe3ec]">
@@ -107,8 +120,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             const img = occasionImage(o.id);
             return (
               <li key={o.id} className={i === OCCASIONS.length - 1 ? "col-span-2 md:col-span-1" : ""}>
+                {/* Each occasion has a page of its own, which is what people search for and what Google can rank. */}
                 <Link
-                  href={`/${lang}/garlands?occasion=${o.id}`}
+                  href={`/${lang}/occasions/${o.id}`}
                   className={`group flex h-full flex-col items-center gap-3 rounded-3xl border border-line p-4 text-center transition hover:-translate-y-0.5 hover:shadow-lg ${OCCASION_BG[o.id]}`}
                 >
                   <span className="relative grid h-24 w-24 place-items-center overflow-hidden rounded-full bg-white/70 sm:h-28 sm:w-28">

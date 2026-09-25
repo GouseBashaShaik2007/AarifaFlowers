@@ -50,3 +50,6 @@ next-env.d.ts
 .open-next
 .wrangler
 .dev.vars*
+
+# Local garland data, photos and customer try-on previews. Never goes to the repository.
+/data

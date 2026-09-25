@@ -1,6 +1,6 @@
 // The questions and answers in the FAQ section. Safe to import anywhere.
 
-import type { Text } from "./catalog";
+import { tr, type Lang, type Text } from "./catalog";
 
 export type FaqItem = {
   id: string;
@@ -13,6 +13,24 @@ export type FaqSettings = {
   enabled: boolean;
   items: FaqItem[];
 };
+
+/**
+ * The questions and answers written out for search engines, which can show them straight in the results.
+ * Only what is really on the page goes in, in the language being read. Null when nothing is filled in.
+ */
+export function faqFacts(items: FaqItem[], lang: Lang) {
+  const shown = items.filter((i) => tr(i.question, lang) && tr(i.answer, lang));
+  if (shown.length === 0) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: shown.map((i) => ({
+      "@type": "Question",
+      name: tr(i.question, lang),
+      acceptedAnswer: { "@type": "Answer", text: tr(i.answer, lang) },
+    })),
+  };
+}
 
 export const MAX_FAQ = 12;
 export const MAX_QUESTION = 200;

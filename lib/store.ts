@@ -16,7 +16,7 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const PRODUCTS_FILE = path.join(DATA_DIR, "products.json");
 export const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
 
-const BUCKET = "garlands";
+export const BUCKET = "garlands";
 const LOCAL_URL_PREFIX = "/api/uploads/";
 
 export const usingSupabase = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -28,7 +28,7 @@ const onCloudflare = typeof navigator !== "undefined" && navigator.userAgent ===
 export const storageReadOnly = !usingSupabase && (onCloudflare || Boolean(process.env.VERCEL));
 
 let client: SupabaseClient | null = null;
-function supabase(): SupabaseClient {
+export function supabase(): SupabaseClient {
   if (!client) {
     client = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
       auth: { persistSession: false },

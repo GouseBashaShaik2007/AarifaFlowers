@@ -9,10 +9,12 @@ import PriceLabel from "@/components/PriceLabel";
 import ProductCard from "@/components/ProductCard";
 import SaveButton from "@/components/SaveButton";
 import ShareButton from "@/components/ShareButton";
+import TryOnButton from "@/components/tryon/TryOnButton";
 import { FLOWERS, OCCASIONS, TYPES, isLang, label, tr } from "@/lib/catalog";
 import { MAX_SAVED } from "@/lib/savedLimit";
 import { fmt, getDict } from "@/lib/i18n";
 import { getSiteSettings } from "@/lib/siteContent";
+import { canTryOn } from "@/lib/tryon";
 import { getProductById, getProducts } from "@/lib/publicData";
 import { BUSINESS_NAME, SITE_URL } from "@/lib/whatsapp";
 
@@ -163,6 +165,12 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
                 <p className="font-semibold text-ink">🚚 {t.delivery}</p>
                 {delivery && <p className="mt-1 text-muted">{delivery}</p>}
                 {leadTime && <p className="mt-2 font-medium text-ink">⏱️ {leadTime}</p>}
+              </div>
+            )}
+
+            {canTryOn(product) && (
+              <div className="mt-6">
+                <TryOnButton product={product} t={t} />
               </div>
             )}
 

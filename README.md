@@ -158,6 +158,22 @@ The `faststart` part lets the video begin before it has fully downloaded. An iPh
 
 The free Supabase plan has a small monthly download allowance for files (about 5 GB when this was written, so please check your plan). At 4 MB per video that is roughly 1,200 plays a month. If the site grows, move the videos to Cloudflare R2, which does not charge for downloads, or Cloudflare Stream.
 
+## Try it on
+
+Customers can see a garland on their own photo before they order. On a garland page they press **Try it on**, add a photo of themselves, the bride or the groom, and move the garland into place with a finger. One finger moves it. Two fingers resize and turn it. The buttons and the mouse wheel do the same.
+
+**Which garlands show the button:** Varmala, Bridal, Groom and Set / Combo garlands, but never a Toran, Car Decoration or Stage / Backdrop garland, even when it is also a set. The main photo must be a cut-out with a see-through background. Photos uploaded with "Use cleaned photo" are cut-outs. A garland whose main photo still has a background does not show the button. Upload a cleaned photo of it as the first photo to turn the button on.
+
+**Ordering a look:** "Order this look on WhatsApp" saves the merged picture and opens WhatsApp with the garland name, its link and a link to the picture, so the picture shows in your chat. The customer's original photo never leaves their phone. Only the merged picture is uploaded, at about 300 KB or less.
+
+**Privacy:** The picture has a random address that nobody can guess and is kept out of search engines. It is stored in the same Supabase bucket as the garland photos, in a folder called looks. A job deletes every picture after 30 days. It runs each day at 03:00 India time, set in `wrangler.jsonc`, and writes one line in the Cloudflare logs ("Old looks clean-up") with the number deleted. The customer sees a short notice about this on the Try it on screen.
+
+**Setup:** It needs the two Supabase values, like everything that is saved. Without them the button still works, but ordering shows an error and the customer can press **Save image** and attach the picture in WhatsApp themselves.
+
+**Security check (optional, recommended):** Cloudflare Turnstile stops bots from filling your storage. Create a widget in the Cloudflare dashboard under Turnstile, then add `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (as a Build variable and a runtime variable) and `TURNSTILE_SECRET_KEY` (as a Secret). Without them, uploads are limited only by size, a check that the file is a photo, and a limit per visitor.
+
+**Good to know:** It is a simple preview. A flat picture of a garland cannot hang or hide behind hair like a real one. Front-facing photos of the garland hanging give the best result.
+
 ## AI suggestions for name and description
 
 In the admin page, after you add photos, the **Suggest name and description with AI** button reads your photos and writes a name and a short description in English, Hindi, Telugu and Urdu. You see the text first and press **Use this text** only if you like it.

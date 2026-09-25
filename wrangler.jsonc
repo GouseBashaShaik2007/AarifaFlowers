@@ -2,7 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   // The Worker name. It must match the name of the project in the Cloudflare dashboard.
   "name": "aarifaflowers",
-  "main": ".open-next/worker.js",
+  // worker.mjs wraps the generated .open-next/worker.js and adds the daily clean-up job below.
+  "main": "worker.mjs",
   "compatibility_date": "2025-09-15",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
@@ -14,6 +15,10 @@
   // ADMIN_PASSWORD, SESSION_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY.
   "vars": {
     "NEXT_PUBLIC_WHATSAPP_NUMBER": "919505840425"
+  },
+  // Every day at 03:00 in India (21:30 UTC) old Try On photos are deleted.
+  "triggers": {
+    "crons": ["30 21 * * *"]
   },
   "services": [
     {

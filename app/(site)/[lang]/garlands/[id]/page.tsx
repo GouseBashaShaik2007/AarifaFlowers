@@ -98,7 +98,7 @@ export default async function ProductPage({ params }: { params: Promise<{ lang: 
         </Link>
 
         <div className="mt-5 grid gap-8 md:grid-cols-2 md:gap-12">
-          <Gallery images={product.images} name={name} altTemplate={t.photoOf} />
+          <Gallery images={product.images} name={name} t={t} />
 
           <div>
             <div className="flex flex-wrap items-center justify-between gap-3">

@@ -138,6 +138,12 @@ To try the site the way Cloudflare runs it, copy `.env.local` to `.dev.vars` and
 - **Most popular** (sort menu): orders the list by real WhatsApp taps over the last 30 days, the same counts you see in the admin. Nothing is invented and no rating is shown. The counts are only fetched when a visitor picks that order, so a normal page view still makes one round of requests. If the count cannot be read, the list quietly keeps its usual order.
 - **How it works** (home page, above the customer stories): four steps — pick, message, we confirm the price, date and advance, fresh delivery on the morning. Edit the words in `lib/i18n.ts` (`step1Title` to `step4Text`) in all four languages. The order notice under it still comes from the Announcements tab.
 
+## Looking closely at a photo
+
+Tapping the big photo on a garland page opens it full screen, on a dark background, with a magnifier mark in the corner as the hint. Pinch with two fingers or double tap to zoom in, then drag to move around; swipe sideways for the next photo and down to close. On a computer the wheel zooms, the arrow keys change photo and Escape closes. It shows the full size photo, not the small one, so this is where a customer decides whether the flowers look right. Cut-out garlands keep their soft panel so pale flowers stay visible against the dark.
+
+It is written by hand in `components/PhotoZoom.tsx` rather than with a zoom library: it is a few pointer events, and the site stays light. There is deliberately no zoom on the garland cards — on a list, tapping a card should open the garland.
+
 ## Occasion pages and being found on Google
 
 - **Occasion pages** (`/en/occasions/wedding`, `/pooja`, `/events`, `/special`, `/custom`): one page per occasion, with its own heading, a few sentences, the garlands for that occasion (Fresh Today first, then featured), links to the other occasions and the FAQ. The five tiles on the home page now lead here instead of to the filtered list. This is the part most likely to bring new customers: people search for "wedding varmala", not for "garlands". Edit the words in `lib/occasionPages.ts` — they are yours to change and worth putting your own voice into. Nothing in them is invented: the notice times are the ones in `lib/orderRules.ts`, and no city, count or rating is claimed. There is no page for the garland types (varmala, toran and so on) yet; the same file would make those easy to add later.

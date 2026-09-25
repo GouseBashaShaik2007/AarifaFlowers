@@ -15,12 +15,14 @@ import {
 } from "@/lib/catalog";
 import type { Review } from "@/lib/content";
 import { MAX_ANSWER, MAX_FAQ, MAX_QUESTION, type FaqItem } from "@/lib/faq";
+import { MAX_HERO } from "@/lib/hero";
 import { cleanHandle, isPlayerMode, MAX_REELS, normalizeReelUrl, type PlayerMode, type Reel } from "@/lib/instagram";
 import {
   deleteReview,
   getInstagramSettings,
   getReview,
   saveFaq,
+  saveHeroSettings,
   saveInstagramSettings,
   saveReview,
   saveSiteSettings,
@@ -383,6 +385,25 @@ export async function saveFaqAction(input: FaqInput): Promise<ActionResult> {
     }
     if (items.length > MAX_FAQ) return { ok: false, error: `You can have up to ${MAX_FAQ} questions.` };
     await saveFaq({ enabled: input.enabled !== false, items });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Could not save." };
+  }
+}
+
+// ---------- home page hero ----------
+
+/** Saves which garlands to feature in the home page hero, in order. Up to MAX_HERO, and only real garlands with a photo. */
+export async function saveHeroAction(productIds: unknown): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return denied;
+  try {
+    const ids = Array.isArray(productIds) ? productIds.filter((v): v is string => typeof v === "string") : [];
+    const unique = [...new Set(ids)].slice(0, MAX_HERO);
+    // Only garlands that still exist and still have a photo may be chosen, in case one was deleted or edited
+    // since the admin page was opened.
+    const known = new Set((await listProducts()).filter((p) => p.images[0]).map((p) => p.id));
+    await saveHeroSettings({ productIds: unique.filter((id) => known.has(id)) });
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Could not save." };

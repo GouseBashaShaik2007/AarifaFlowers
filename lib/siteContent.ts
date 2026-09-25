@@ -4,6 +4,7 @@
 import { cache } from "react";
 import { DEFAULT_SETTINGS, type Review, type SiteSettings } from "./content";
 import { DEFAULT_FAQ, type FaqSettings } from "./faq";
+import { DEFAULT_HERO, type HeroSettings } from "./hero";
 import { DEFAULT_INSTAGRAM, isPlayerMode, type InstagramSettings } from "./instagram";
 import { readDoc, readDocs, writeDoc } from "./store";
 
@@ -11,12 +12,13 @@ const SETTINGS_KEY = "site";
 const REVIEWS_KEY = "reviews";
 const INSTAGRAM_KEY = "instagram";
 const FAQ_KEY = "faq";
+const HERO_KEY = "hero";
 
 /**
  * Every saved document a public page can need, fetched with one request and shared by everything that asks
  * during the same page view. Without this each getter below made its own trip to the database.
  */
-const loadDocs = cache(() => readDocs([SETTINGS_KEY, REVIEWS_KEY, INSTAGRAM_KEY, FAQ_KEY]));
+const loadDocs = cache(() => readDocs([SETTINGS_KEY, REVIEWS_KEY, INSTAGRAM_KEY, FAQ_KEY, HERO_KEY]));
 
 /**
  * The saved texts, or the suggested wording for anything the owner has not saved yet.
@@ -103,4 +105,16 @@ export async function hasSavedInstagramSettings(): Promise<boolean> {
 
 export async function saveInstagramSettings(settings: InstagramSettings): Promise<void> {
   await writeDoc(INSTAGRAM_KEY, settings);
+}
+
+/** The garlands chosen for the home page hero. Empty until the owner picks any, which is how the automatic fallback stays active. */
+export const getHeroSettings = cache(async (): Promise<HeroSettings> => {
+  const saved = (await loadDocs())[HERO_KEY] as Partial<HeroSettings> | undefined;
+  return {
+    productIds: Array.isArray(saved?.productIds) ? saved.productIds.filter((v): v is string => typeof v === "string") : DEFAULT_HERO.productIds,
+  };
+});
+
+export async function saveHeroSettings(settings: HeroSettings): Promise<void> {
+  await writeDoc(HERO_KEY, settings);
 }

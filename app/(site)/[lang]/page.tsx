@@ -3,15 +3,16 @@ import { notFound } from "next/navigation";
 import { ArrowIcon } from "@/components/icons";
 import CustomerStories from "@/components/CustomerStories";
 import FaqSection from "@/components/FaqSection";
-import FitPhoto from "@/components/FitPhoto";
+import HeroPicture, { type HeroPic } from "@/components/HeroPicture";
 import InstagramShowcase from "@/components/InstagramShowcase";
 import JsonLd from "@/components/JsonLd";
 import ProductCard from "@/components/ProductCard";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { OCCASIONS, isCutout, isLang, thumbOf, tr } from "@/lib/catalog";
+import { pickHeroCandidates } from "@/lib/hero";
 import { getDict } from "@/lib/i18n";
 import { profileUrl, visibleReels } from "@/lib/instagram";
-import { getFaq, getInstagramSettings, getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
+import { getFaq, getHeroSettings, getInstagramSettings, getPublishedReviews, getSiteSettings } from "@/lib/siteContent";
 import { getProducts } from "@/lib/publicData";
 import { BUSINESS_NAME, SITE_URL, WHATSAPP_DISPLAY, customMessage, generalMessage, waLink } from "@/lib/whatsapp";
 
@@ -29,12 +30,13 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const t = getDict(lang);
 
   // Everything the page needs is asked for at the same moment, not one after another.
-  const [products, allReviews, instagram, faq, settings] = await Promise.all([
+  const [products, allReviews, instagram, faq, settings, hero] = await Promise.all([
     getProducts(),
     getPublishedReviews(),
     getInstagramSettings(),
     getFaq(),
     getSiteSettings(),
+    getHeroSettings(),
   ]);
   const featured = products.filter((p) => p.featured).slice(0, 8);
   // Sets that are already in Best sellers are not shown twice, so a visitor does not scroll past the same garlands again.
@@ -42,7 +44,11 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const sets = products.filter((p) => p.types.includes("set") && !featuredIds.has(p.id)).slice(0, 4);
   const reviews = allReviews.slice(0, 6);
   const leadTime = tr(settings.leadTime, lang);
-  const heroPics = (featured.length ? featured : products).filter((p) => p.images[0]).slice(0, 3);
+  // The owner's picks, then the newest Featured garlands fill any empty slots, so the hero is never blank.
+  const heroPics: HeroPic[] = pickHeroCandidates(
+    hero.productIds,
+    products.map((p) => ({ ...p, hasPhoto: Boolean(p.images[0]) })),
+  ).map((p) => ({ image: p.images[0], alt: tr(p.name, lang) }));
 
   const occasionImage = (id: string) => {
     const matches = products.filter((p) => p.occasions.includes(id as never) && p.images[0]);
@@ -89,44 +95,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             </div>
           </div>
 
-          {heroPics.length > 0 && (
-            <div className="relative mx-auto aspect-square w-full max-w-md">
-              <div className="absolute inset-4 rounded-full bg-gradient-to-br from-rose-soft via-white to-marigold-soft" />
-              {isCutout(heroPics[0].images[0]) ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={thumbOf(heroPics[0].images[0])}
-                  alt={tr(heroPics[0].name, lang)}
-                  className="absolute inset-0 h-full w-full object-contain p-3 drop-shadow-xl"
-                />
-              ) : (
-                // An ordinary photo is shown as a tall framed picture, not as a rectangle inside the round shape.
-                <div className="absolute inset-y-1 left-1/2 aspect-[4/5] -translate-x-1/2 overflow-hidden rounded-[2rem] border-4 border-white bg-cream shadow-xl">
-                  <FitPhoto src={thumbOf(heroPics[0].images[0])} alt={tr(heroPics[0].name, lang)} priority />
-                </div>
-              )}
-              {heroPics[1] && (
-                <div className="absolute -bottom-1 start-0 h-28 w-28 overflow-hidden rounded-full border-4 border-white bg-cream shadow-lg sm:h-32 sm:w-32">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={thumbOf(heroPics[1].images[0])}
-                    alt={tr(heroPics[1].name, lang)}
-                    className={`h-full w-full ${isCutout(heroPics[1].images[0]) ? "object-contain p-2" : "object-cover"}`}
-                  />
-                </div>
-              )}
-              {heroPics[2] && (
-                <div className="absolute end-0 top-2 h-24 w-24 overflow-hidden rounded-full border-4 border-white bg-cream shadow-lg sm:h-28 sm:w-28">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={thumbOf(heroPics[2].images[0])}
-                    alt={tr(heroPics[2].name, lang)}
-                    className={`h-full w-full ${isCutout(heroPics[2].images[0]) ? "object-contain p-2" : "object-cover"}`}
-                  />
-                </div>
-              )}
-            </div>
-          )}
+          <HeroPicture pics={heroPics} />
         </div>
       </section>
 
